@@ -1,0 +1,10 @@
+2026-04-10 16:25:08,975 - agent - INFO - logger_handler.py:56 - 信息日志
+2026-04-10 16:25:08,975 - agent - ERROR - logger_handler.py:57 - 错误日志
+2026-04-10 16:25:08,975 - agent - WARNING - logger_handler.py:58 - 警告日志
+2026-04-10 16:25:08,975 - agent - DEBUG - logger_handler.py:59 - 调试日志
+2026-04-10 17:35:19,944 - agent - INFO - logger_handler.py:56 - 信息日志
+2026-04-10 17:35:19,944 - agent - ERROR - logger_handler.py:57 - 错误日志
+2026-04-10 17:35:19,944 - agent - WARNING - logger_handler.py:58 - 警告日志
+2026-04-10 17:35:19,944 - agent - DEBUG - logger_handler.py:59 - 调试日志
+2026-04-10 17:36:47,713 - agent - ERROR - file_handler.py:12 - [MD5计算]文件D:\wqxproject\Agent_Project\data\选.txt不存在
+2026-04-10 21:42:18,039 - agent - ERROR - prompt_loader.py:26 - [rag提示词模板]在yaml中没有找到rag_summarize_prompt_path配置项

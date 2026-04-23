@@ -1,0 +1,16 @@
+2026-04-23 00:00:47,077 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有1条消息。
+2026-04-23 00:00:47,079 - agent - DEBUG - middleware.py:47 - [log_before_model]HumanMessage | 十二指肠患者需要注意什么
+2026-04-23 00:00:49,303 - agent - INFO - middleware.py:23 - [tool monitor]执行工具：rag_summarize
+2026-04-23 00:00:49,303 - agent - INFO - middleware.py:24 - [tool monitor]传入参数：{'query': '十二指肠患者注意事项'}
+2026-04-23 00:00:56,827 - agent - INFO - middleware.py:28 - [tool monitor]工具rag_summarize调用成功
+2026-04-23 00:00:58,124 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有3条消息。
+2026-04-23 00:00:58,126 - agent - DEBUG - middleware.py:47 - [log_before_model]ToolMessage | 十二指肠溃疡患者需注意：90%以上与幽门螺杆菌（Hp）感染相关，典型症状为空腹痛、饥饿痛或夜间痛，进食或服用抗酸剂后可缓解；溃疡好发于十二指肠球部，几乎不发生癌变。应积极根除Hp，避免使用非甾体抗炎药，并规律饮食以减少胃酸对溃疡面的刺激。
+2026-04-23 00:01:17,872 - agent - DEBUG - middleware.py:127 - [Disclaimer Middleware] 已成功为本次回复注入医疗免责声明。
+2026-04-23 12:42:58,519 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有3条消息。
+2026-04-23 12:42:58,520 - agent - DEBUG - middleware.py:47 - [log_before_model]HumanMessage | 十二指肠溃疡怎么治疗
+2026-04-23 12:43:00,186 - agent - INFO - middleware.py:23 - [tool monitor]执行工具：rag_summarize
+2026-04-23 12:43:00,186 - agent - INFO - middleware.py:24 - [tool monitor]传入参数：{'query': '十二指肠溃疡的治疗方法'}
+2026-04-23 12:43:09,108 - agent - INFO - middleware.py:28 - [tool monitor]工具rag_summarize调用成功
+2026-04-23 12:43:11,336 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有5条消息。
+2026-04-23 12:43:11,336 - agent - DEBUG - middleware.py:47 - [log_before_model]ToolMessage | 十二指肠溃疡的治疗主要包括根除幽门螺杆菌（Hp）和抑制胃酸分泌。90%以上的十二指肠溃疡患者存在Hp感染，因此推荐采用铋剂四联疗法进行根除，疗程为14天，包含质子泵抑制剂（PPI）或钾离子竞争性酸阻滞剂（P-CAB）、铋剂、阿莫西林及另一种抗生素（如克拉霉素、左氧氟沙星、呋喃唑酮或四环素）。同时，PPI可有效抑制胃酸分泌，促进溃疡愈合。十二指肠溃疡几乎不发生癌变，治疗后通常无需像胃溃疡那样强制复查胃镜排除恶变。
+2026-04-23 12:43:39,076 - agent - DEBUG - middleware.py:127 - [Disclaimer Middleware] 已成功为本次回复注入医疗免责声明。

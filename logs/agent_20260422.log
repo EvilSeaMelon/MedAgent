@@ -1,0 +1,5 @@
+2026-04-22 23:29:44,710 - agent - INFO - vector_store.py:176 - [加载知识库] D:\wqxproject\Agent_Project\data\常见胃部疾病病理分类与临床诊断标准.txt 内容加载成功
+2026-04-22 23:29:45,448 - agent - INFO - vector_store.py:176 - [加载知识库] D:\wqxproject\Agent_Project\data\消化系统一线药物治疗与用药方案.txt 内容加载成功
+2026-04-22 23:29:48,882 - agent - INFO - vector_store.py:176 - [加载知识库] D:\wqxproject\Agent_Project\data\胃粘膜保护与致病危险因素的营养干预.pdf 内容加载成功
+2026-04-22 23:29:49,660 - agent - INFO - vector_store.py:176 - [加载知识库] D:\wqxproject\Agent_Project\data\胃部疾病流行病学与统计学数据.txt 内容加载成功
+2026-04-22 23:29:49,663 - agent - INFO - vector_store.py:84 - [VectorStore] 混合检索 BM25 内存索引已完成热重载

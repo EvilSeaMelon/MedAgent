@@ -1,0 +1,1 @@
+invalid type: string "5. 运行与维护指南\n启动系统需要开启两个独立的终端窗口：\n后端启动：进入 backend 目录，执行 python main.py。确认访问 http://\n127.0.0.1:8000/docs 正常。\n前端启动：进入 frontend 目录，执行 python -m streamlit run\napp_main.py。\n本文档由 AI 助手根据 RAG 项目实战重构过程自动生成 | 2026-04-21\n1.", exp
