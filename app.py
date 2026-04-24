@@ -7,6 +7,22 @@ from agent.react_agent import ReactAgent
 st.title("MedAgent 医疗健康助手")
 st.divider()
 
+# 👇 新增：在左侧边栏放置清空按钮
+with st.sidebar:
+    st.header("⚙️ 助手控制台")
+    if st.button("🗑️ 清空历史对话", use_container_width=True):
+        # 1. 擦除数据库里的长时记忆
+        if "agent" in st.session_state:
+            st.session_state["agent"].clear_memory()
+
+        # 2. 擦除网页 UI 的显示记忆，并恢复默认的欢迎语
+        st.session_state["message"] = [
+            {"role": "assistant", "content": "记忆已成功清空！"}]
+
+        # 3. 强制刷新页面，让清空效果立刻生效
+        st.rerun()
+
+
 if "agent" not in st.session_state:
     st.session_state["agent"] = ReactAgent()
 

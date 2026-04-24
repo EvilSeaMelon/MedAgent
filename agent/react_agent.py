@@ -40,6 +40,11 @@ class ReactAgent:
                 AIMessage(content=latest_ai_content),
             ])
 
+    # 👇 新增这个清空记忆的方法
+    def clear_memory(self, session_id: str = "default.json"):
+        """调用底层的 clear() 方法，一键清空 MySQL 中对应 session_id 的所有记录"""
+        history = get_history(session_id)
+        history.clear()
 
 if __name__ == '__main__':
     agent = ReactAgent()
