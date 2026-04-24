@@ -1,59 +1,20 @@
-import json
-import os
-from typing import Sequence
 
-from langchain_core.chat_history import BaseChatMessageHistory
-from langchain_core.messages import BaseMessage, messages_from_dict, message_to_dict
-from utils.path_tool import get_abs_path
+from langchain_community.chat_message_histories import SQLChatMessageHistory
 
-
-class FileChatMessageHistory(BaseChatMessageHistory):
-    def __init__(self, session_id, storage_path):
-        self.session_id = session_id        # 会话id
-        self.storage_path = storage_path    # 不同会话id的存储文件，所在的文件夹路径
-        # 完整的文件路径
-        self.file_path = os.path.join(self.storage_path, self.session_id)
-
-        # 确保文件夹是存在的
-        os.makedirs(os.path.dirname(self.file_path), exist_ok=True)
+# 你的 MySQL 连接字符串
+# 格式: mysql+驱动名://用户名:密码@主机地址:端口/数据库名
+MYSQL_URL = "mysql+pymysql://root:123456@127.0.0.1:3306/medagent_db"
 
 
-    # 读取文件，将[dict]转换为[BaseMessage]输出
-    @property       # @property装饰器将messages方法变成成员属性用
-    def messages(self) -> list[BaseMessage]:
-        # 当前文件内： list[字典]
-        try:
-            with open(self.file_path, "r", encoding="utf-8") as f:
-                messages_data = json.load(f)                # 返回值是list[dict,dict,...]
-                return messages_from_dict(messages_data)    # 返回值是list[BaseMessage,BaseMessage,...]
-        except FileNotFoundError:
-            return []
+def get_history(session_id: str):
+    """
+    根据 session_id 从 MySQL 数据库提取历史对话。
+    如果表不存在，SQLChatMessageHistory 会自动帮你建表！
+    """
+    chat_message_history = SQLChatMessageHistory(
+        session_id=session_id,
+        connection_string=MYSQL_URL,
+        table_name="chat_history"  # 这是将在 MySQL 中自动创建的表名
+    )
 
-    # 加入新消息
-    def add_messages(self, messages_new: Sequence[BaseMessage]) -> None:
-        # Sequence序列 类似list、tuple
-        all_messages = list(self.messages)      # 已有的消息列表
-        all_messages.extend(messages_new)           # 新的和已有的融合成一个list
-
-        # 将数据同步写入到本地文件中
-        # 类对象写入文件 -> 一堆二进制
-        # 为了方便，可以将BaseMessage消息转为字典（借助json模块以json字符串写入文件）
-        # 官方message_to_dict：单个消息对象（BaseMessage类实例） -> 字典
-
-        # new_messages = []
-        # for message in all_messages:
-        #     d = message_to_dict(message)
-        #     new_messages.append(d)
-
-        new_messages = [message_to_dict(message) for message in all_messages]
-        # 将数据写入文件
-        with open(self.file_path, "w", encoding="utf-8") as f:
-            json.dump(new_messages, f)
-
-
-    def clear(self) -> None:
-        with open(self.file_path, "w", encoding="utf-8") as f:
-            json.dump([], f)
-
-def get_history(session_id):
-    return FileChatMessageHistory(session_id, get_abs_path("chat_history"))
+    return chat_message_history
