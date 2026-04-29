@@ -1,5 +1,9 @@
+import asyncio
 import csv
 import os
+import sys
+import threading
+
 from utils.logger_handler import logger
 from langchain_core.tools import tool
 from rag.rag_service import RagSummarizeService
@@ -19,62 +23,8 @@ def rag_summarize(query: str) -> str:
     return rag.rag_summarize(query)
 
 # ---------------------------------------------------------
-# 工具 2：患者既往病历查询
+# 工具 2：患者既往病历查询 做成mcp了
 # ---------------------------------------------------------
-def get_external_data():
-    """
-    {
-        "P1001": {"姓名": xxx, "既往病史": xxx, "近期体征": xxx, ...},
-        "P1002": {"姓名": xxx, "既往病史": xxx, "近期体征": xxx, ...},
-        ...
-    }
-    """
-    global external_data
-    if not external_data:
-        external_data_path = get_abs_path(agent_conf["external_data_path"])
-
-        if not os.path.exists(external_data_path):
-            raise FileNotFoundError(f"外部数据文件{external_data_path}不存在")
-
-        with open(external_data_path, "r", encoding="utf-8") as f:
-            # 引入 csv.reader 防止带有逗号的句子被错误切分
-            reader = csv.reader(f)
-            next(reader)  # 跳过第一行表头
-
-            for arr in reader:
-                # 对应 csv 的 8 列数据
-                patient_id: str = arr[0].strip()
-                name: str = arr[1]
-                age: str = arr[2]
-                gender: str = arr[3]
-                history: str = arr[4]
-                allergy: str = arr[5]
-                symptom: str = arr[6]
-                signs: str = arr[7]
-
-                # 赋值装载（直接挂载到 patient_id 下）
-                if patient_id not in external_data:
-                    external_data[patient_id] = {
-                        "姓名": name,
-                        "年龄": age,
-                        "性别": gender,
-                        "既往病史": history,
-                        "过敏史": allergy,
-                        "近期症状(主诉)": symptom,
-                        "近期体征": signs,
-                    }
-
-
-@tool(description="从外部病历系统中获取指定患者（如 P1001）的病历档案与体征数据，以字符串形式返回，如果未检索到返回空字符串")
-def fetch_patient_record(patient_id: str) -> str:
-    get_external_data()
-
-    try:
-        # 字典装载得，直接用 str() 将字典转为字符串喂给大模型即可
-        return str(external_data[patient_id])
-    except KeyError:
-        logger.warning(f"[外部数据]未能检索到患者：{patient_id} 的病历记录数据")
-        return ""
 
 
 # ---------------------------------------------------------
@@ -87,3 +37,85 @@ def fill_context_for_report() -> str:
     middleware 会拦截它的调用，并在 runtime 中设置 report=True。
     """
     return "fill_context_for_report已调用"
+
+
+# =========================================================
+# 🌟 MCP 远程微服务接入网关 (降维打击代码)
+# =========================================================
+
+# “隔音电话亭” 开新线程。
+def _run_async_in_thread(coro):
+    """
+    专门为 FastAPI 写的异步隔离器。
+    确保无论主线程的事件循环怎么跑，这里的 MCP 异步通信都不会产生死锁冲突。
+    """
+    result = []
+    error = []
+
+    def run():
+        try:
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            result.append(loop.run_until_complete(coro))
+        except Exception as e:
+            error.append(e)
+        finally:
+            loop.close()
+
+    t = threading.Thread(target=run)
+    t.start()
+    t.join()
+
+    if error:
+        raise error[0]
+    return result[0]
+
+@tool(description="从外部病历系统中获取指定患者（如 P1001）的病历档案与体征数据")
+def fetch_patient_record(patient_id: str) -> str:
+    """
+    大模型调用这个工具时，它实际上是一个“空壳中转站”。
+    它会通过 MCP 标准协议，跨进程唤醒远端的 mcp_service.py，并把结果拿回来。
+    """
+    print(f"\n[MCP 网关] 正在建立安全协议通道，呼叫远端微服务查询: {patient_id}...")
+
+    # “加密对讲机的呼叫过程”
+    async def _call_mcp_server():
+        # 引入官方 MCP 客户端核心库
+        from mcp import ClientSession, StdioServerParameters
+        from mcp.client.stdio import stdio_client
+
+        # 精准定位你的微服务脚本路径
+        current_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        mcp_script = os.path.join(current_dir, "mcp_service.py")
+
+        # 配置 MCP 宿主连接：这里采用 stdio (标准输入输出) 模式
+        # 它的安全性极高，相当于拔掉网线也能实现跨进程通信，是企业内网的标配
+        server_params = StdioServerParameters(
+            command=sys.executable,
+            args=[mcp_script],
+
+            env={**os.environ, "PYTHONIOENCODING": "utf-8"}
+        )
+
+        # 1. 建立 MCP 协议连接通道
+        async with stdio_client(server_params) as (read, write):
+            # 2. 开启通信会话
+            async with ClientSession(read, write) as session:
+                # 3. 初始化握手 (告诉对方我是大模型客户端)
+                await session.initialize()
+
+                # 4. 跨系统远程调用！执行远端暴露的 "fetch_patient_record"
+                response = await session.call_tool(
+                    "fetch_patient_record",
+                    arguments={"patient_id": patient_id}
+                )
+
+                # 5. 解析并返回微服务传回来的数据
+                return response.content[0].text
+
+    # 启动隔离器，运行上面的异步调用
+    try:
+        return _run_async_in_thread(_call_mcp_server())
+    except Exception as e:
+        print(f"[MCP 网关] 远程调用失败: {e}")
+        return ""
