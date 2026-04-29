@@ -1,58 +1,67 @@
-import time
-
 import streamlit as st
-from agent.react_agent import ReactAgent
+import requests
+import time  # 🌟 引入时间模块，用来控制打字速度
 
-# 标题
+st.set_page_config(page_title="MedAgent 医疗健康助手", page_icon="⚕️")
 st.title("MedAgent 医疗健康助手")
+st.caption("稳定版")
 st.divider()
 
-# 👇 新增：在左侧边栏放置清空按钮
+# 接口地址改回普通地址
+BACKEND_URL = "http://127.0.0.1:8000/api/chat"
+
 with st.sidebar:
     st.header("⚙️ 助手控制台")
     if st.button("🗑️ 清空历史对话", use_container_width=True):
-        # 1. 擦除数据库里的长时记忆
-        if "agent" in st.session_state:
-            st.session_state["agent"].clear_memory()
-
-        # 2. 擦除网页 UI 的显示记忆，并恢复默认的欢迎语
-        st.session_state["message"] = [
-            {"role": "assistant", "content": "记忆已成功清空！"}]
-
-        # 3. 强制刷新页面，让清空效果立刻生效
-        st.rerun()
-
-
-if "agent" not in st.session_state:
-    st.session_state["agent"] = ReactAgent()
+        delete_url = "http://127.0.0.1:8000/api/chat/history/P1001"
+        try:
+            res = requests.delete(delete_url)
+            if res.status_code == 200:
+                st.session_state["message"] = [{"role": "assistant", "content": "记忆已成功清空！"}]
+                st.rerun()
+        except requests.exceptions.ConnectionError:
+            st.error("无法连接到后端服务器！")
 
 if "message" not in st.session_state:
-    st.session_state["message"] = [{"role": "assistant", "content": "干嘛？"}]
+    st.session_state["message"] = [{"role": "assistant", "content": "干嘛"}]
 
-for message in st.session_state["message"]:
-    st.chat_message(message["role"]).write(message["content"])
+for msg in st.session_state["message"]:
+    st.chat_message(msg["role"]).write(msg["content"])
 
-# 用户输入提示词
-prompt = st.chat_input()
-
-if prompt:
+if prompt := st.chat_input("请输入问题..."):
     st.chat_message("user").write(prompt)
     st.session_state["message"].append({"role": "user", "content": prompt})
 
-    response_messages = []
-    with st.spinner("智能客服思考中..."):
-        res_stream = st.session_state["agent"].execute_stream(prompt)
+    with st.chat_message("assistant"):
+        with st.spinner("正在检索医学知识并深度思考..."):
+            try:
+                # 1. 彻底放弃 stream=True，一次性把完整答案拿过来
+                response = requests.post(
+                    BACKEND_URL,
+                    json={"query": prompt, "session_id": "P1001"}
+                )
 
-        def capture(generator, cache_list):
+                if response.status_code == 200:
+                    data = response.json()
+                    full_response = data["data"]["answer"]
 
-            for chunk in generator:
-                cache_list.append(chunk)
 
-                for char in chunk:
-                    time.sleep(0.01)
-                    yield char
+                    # ==========================================
+                    # 🌟 核心魔法：前端生成器，制造打字机效果
+                    # ==========================================
+                    def stream_data(text):
+                        for char in text:
+                            time.sleep(0.015)  # 调节这个数字可以改变打字速度 (0.015 秒一个字)
+                            yield char
 
-        st.chat_message("assistant").write_stream(capture(res_stream, response_messages))
-        assistant_text = "".join(response_messages)
-        st.session_state["message"].append({"role": "assistant", "content": assistant_text})
-        st.rerun()
+
+                    # 2. st.write_stream 会接收这个生成器，一个字一个字地在屏幕上敲出来！
+                    st.write_stream(stream_data(full_response))
+
+                    # 3. 保存进记忆
+                    st.session_state["message"].append({"role": "assistant", "content": full_response})
+                else:
+                    st.error(f"后端返回错误状态码: {response.status_code}")
+
+            except requests.exceptions.ConnectionError:
+                st.error("🚨 无法连接到后端服务器！请确保 FastAPI 后端正在运行！")

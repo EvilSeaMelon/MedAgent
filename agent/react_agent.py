@@ -14,10 +14,12 @@ class ReactAgent:
             model=chat_model,
             system_prompt=load_system_prompt(),
             tools=[rag_summarize, fetch_patient_record, fill_context_for_report],
-            middleware=[monitor_tool, log_before_model, report_prompt_switch, report_generator_middleware, medical_disclaimer_middleware],
+            middleware=[monitor_tool, log_before_model, report_prompt_switch, report_generator_middleware,
+                        medical_disclaimer_middleware],
         )
 
-    def execute_stream(self, query: str, session_id: str = "default.json"):
+    # 🌟 删掉所有的 stream，换回最稳的 invoke
+    def execute(self, query: str, session_id: str = "default.json"):
         history = get_history(session_id)
         input_messages = list(history.messages)
         input_messages.append(HumanMessage(content=query))
@@ -25,29 +27,32 @@ class ReactAgent:
             "messages": input_messages
         }
 
-        latest_ai_content = ""
-        # 第三个参数context就是上下文runtime中的信息，就是我们做提示词切换的标记
-        for chunk in self.agent.stream(input_dict, stream_mode="values", context={"report": False}):
-            latest_message = chunk["messages"][-1]
-            if latest_message.content:
-                if latest_message.__class__.__name__ == "AIMessage":
-                    latest_ai_content = latest_message.content.strip()
-                yield latest_message.content.strip() + "\n"
+        print(f"\n⏳ [AI 引擎] 收到请求：{query}，正在全面思考...")
+        try:
+            # 阻塞式调用，我们已知这个绝对不会卡！
+            response = self.agent.invoke(
+                input_dict,
+                config={"configurable": {"thread_id": session_id}},
+                context={"report": False}  # 之前修复过的中间件参数
+            )
 
-        if latest_ai_content:
+            final_ai_message = response["messages"][-1].content
+
+            # 存入 MySQL 记忆
             history.add_messages([
                 HumanMessage(content=query),
-                AIMessage(content=latest_ai_content),
+                AIMessage(content=final_ai_message),
             ])
+            print("\n✅ [AI 引擎] 思考完毕，准备返回完整结果")
+            return final_ai_message
 
-    # 👇 新增这个清空记忆的方法
+        except Exception as e:
+            error_msg = f"🚨 引擎底层报错: {str(e)}"
+            print(error_msg)
+            return error_msg
+
+    # 👇 原有的清空记忆方法完美保留
     def clear_memory(self, session_id: str = "default.json"):
         """调用底层的 clear() 方法，一键清空 MySQL 中对应 session_id 的所有记录"""
         history = get_history(session_id)
         history.clear()
-
-if __name__ == '__main__':
-    agent = ReactAgent()
-
-    for chunk in agent.execute_stream("给我生成我的使用报告"):
-        print(chunk, end="", flush=True)

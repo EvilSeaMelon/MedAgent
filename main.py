@@ -1,10 +1,13 @@
-
 import uvicorn
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
+# 引入流式响应组件
+from fastapi.responses import StreamingResponse
 
-# 引入刚刚写好的数据契约
+# 引入数据契约
 from schemas.payload import ChatRequest
+# 引入智能体大脑
+from agent.react_agent import ReactAgent
 
 # 1. 初始化 FastAPI 引擎
 app = FastAPI(
@@ -13,39 +16,67 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# 2. 挂载 CORS 中间件 (极其重要！)
-# 因为未来你的 Streamlit 跑在 8501 端口，FastAPI 跑在 8000 端口，
-# 端口不同属于“跨域”，不加这个配置，前端请求会被浏览器直接拦截。
+# 2. 挂载 CORS 中间件
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # 开发阶段允许所有前端访问，上线后改成你前端的真实域名
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+# ==========================================
+# 🌟 全局单例模式 (回归最稳的原生写法)
+# ==========================================
+# 在服务器启动时，只实例化一次大脑，常驻内存
+print("⏳ 正在初始化核心大模型引擎...")
+global_agent = ReactAgent()
+print("✅ 引擎加载完毕！")
 
-# 3. 基础健康检查接口
+def get_shared_agent():
+    """依赖注入函数：确保每个请求都共用上面那个全局大脑"""
+    return global_agent
+
+
 @app.get("/health")
 async def health_check():
-    """用于服务器监控，检查服务是否存活"""
     return {"status": "ok", "service": "Aegis-Med Backend is running!"}
 
 
-# 4. 核心对话接口的“骨架”（暂时不接大模型，先测试通路）
 @app.post("/api/chat")
-async def chat_endpoint(request: ChatRequest):
-    """接收对话请求的入口"""
-    print(f"接收到前端请求 -> Session: {request.session_id} | Query: {request.query}")
+async def chat_endpoint(
+        request: ChatRequest,
+        agent: ReactAgent = Depends(get_shared_agent)
+):
+    """接收对话请求，等待思考完毕后返回完整 JSON"""
+    print(f"📥 接收到普通请求 -> Session: {request.session_id} | Query: {request.query}")
 
-    # 这里是下一阶段我们要把 react_agent.py 塞进去的地方
+    # 调用刚才改好的 execute 同步方法
+    answer = agent.execute(query=request.query, session_id=request.session_id)
+
+    # 将完整的答案打包成标准 JSON 返回
     return {
         "code": 200,
-        "message": "请求已成功被后端拦截器接收",
-        "data": {"your_query": request.query}
+        "message": "success",
+        "data": {
+            "answer": answer
+        }
     }
 
 
+# 5. 清理记忆接口
+@app.delete("/api/chat/history/{session_id}")
+async def clear_chat_history(
+    session_id: str,
+    agent: ReactAgent = Depends(get_shared_agent)
+):
+    try:
+        agent.clear_memory(session_id=session_id)
+        return {"code": 200, "message": "记忆清除成功"}
+    except Exception as e:
+        return {"code": 500, "message": f"记忆清除失败: {str(e)}"}
+
+
 if __name__ == "__main__":
-    # 使用 Uvicorn 启动异步服务器
+    # 使用 reload=True 方便你在修改代码后自动重启
     uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
