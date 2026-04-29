@@ -119,7 +119,7 @@ def medical_disclaimer_middleware(
     if last_message.type == "ai" and last_message.content and not last_message.tool_calls:
 
         # 使用红色或加粗突出显示（支持 Markdown 的前端可以直接渲染）
-        disclaimer = "\n\n<span style='color:#ff4d4f; font-size:12px;'>⚠️ **Aegis-Med 医疗免责声明**：本系统的分析与建议仅供参考，不具有临床医学诊断效力。如有身体不适，请及时前往正规医疗机构就诊。</span>"
+        disclaimer = "\n\n⚠️ 本系统的分析与建议仅供参考，不具有临床医学诊断效力。如有身体不适，请及时前往正规医疗机构就诊。"
 
         # 防止因为重试机制导致免责声明被重复添加
         if "免责声明" not in last_message.content:
