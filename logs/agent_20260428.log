@@ -1,0 +1,91 @@
+2026-04-28 23:08:11,562 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有1条消息。
+2026-04-28 23:08:11,562 - agent - DEBUG - middleware.py:47 - [log_before_model]HumanMessage | 我有胃溃疡，可以吃什么药
+2026-04-28 23:08:13,875 - agent - INFO - middleware.py:23 - [tool monitor]执行工具：rag_summarize
+2026-04-28 23:08:13,875 - agent - INFO - middleware.py:24 - [tool monitor]传入参数：{'query': '胃溃疡 治疗药物'}
+2026-04-28 23:08:24,319 - agent - INFO - middleware.py:28 - [tool monitor]工具rag_summarize调用成功
+2026-04-28 23:08:24,322 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有3条消息。
+2026-04-28 23:08:24,323 - agent - DEBUG - middleware.py:47 - [log_before_model]ToolMessage | 胃溃疡的治疗药物主要包括以下几类：  
+1. **幽门螺杆菌（Hp）根除方案**：采用铋剂四联疗法，疗程14天，包括质子泵抑制剂（PPI）或钾离子竞争性酸阻滞剂（P-CAB）、铋剂（如枸橼酸铋钾）、阿莫西林及另一种抗生素（如克拉霉素、左氧氟沙星、呋喃唑酮或四环素）。  
+2. **质子泵抑制剂（PPI）**：如奥美拉唑、雷贝拉唑、泮托拉唑，通过不可逆抑制H+/K+-ATP酶减少胃酸分泌；长期使用需注意骨质疏松、维生素B12缺乏及胃底腺息肉等风险。  
+3. **胃黏膜保护剂**：如硫糖铝（形成物理屏障）、瑞巴派特（促进前列腺素合成、改善黏膜血流）、铝碳酸镁（中和胃酸并结合胆酸，适用于胆汁反流）。  
+
+注：胃溃疡存在1%–5%恶变风险，治疗后需胃镜复查确认愈合并排除恶性病变。
+2026-04-28 23:08:39,063 - agent - DEBUG - middleware.py:127 - [Disclaimer Middleware] 已成功为本次回复注入医疗免责声明。
+2026-04-28 23:09:18,472 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有3条消息。
+2026-04-28 23:09:18,472 - agent - DEBUG - middleware.py:47 - [log_before_model]HumanMessage | 没有流式输出
+2026-04-28 23:09:20,196 - agent - INFO - middleware.py:23 - [tool monitor]执行工具：rag_summarize
+2026-04-28 23:09:20,196 - agent - INFO - middleware.py:24 - [tool monitor]传入参数：{'query': '胃溃疡治疗药物及用药禁忌'}
+2026-04-28 23:09:35,624 - agent - INFO - middleware.py:28 - [tool monitor]工具rag_summarize调用成功
+2026-04-28 23:09:35,626 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有5条消息。
+2026-04-28 23:09:35,626 - agent - DEBUG - middleware.py:47 - [log_before_model]ToolMessage | 胃溃疡治疗药物主要包括：  
+1. **幽门螺杆菌（Hp）根除方案**：采用铋剂四联疗法，疗程14天，包含质子泵抑制剂（PPI）或钾离子竞争性酸阻滞剂（P-CAB）、铋剂（如枸橼酸铋钾）、阿莫西林及另一种抗生素（如克拉霉素、左氧氟沙星、呋喃唑酮或四环素）。需注意抗生素耐药性及不良反应（如呋喃唑酮可能致多发性神经炎，四环素有肝肾毒性）。  
+2. **质子泵抑制剂（PPI）**：如奥美拉唑、雷贝拉唑、泮托拉唑，通过抑制胃酸分泌促进溃疡愈合。长期使用（>1年）可能增加小肠细菌过度生长、艰难梭菌感染、骨质疏松性骨折及维生素B12缺乏风险，并可能诱发胃底腺息肉。  
+3. **胃黏膜保护剂**：如硫糖铝（形成物理屏障）、瑞巴派特（促进前列腺素合成、改善黏膜血流）、铝碳酸镁（中和胃酸并结合胆酸，适用于胆汁反流）。  
+
+**用药禁忌与注意事项**：  
+- 所有胃溃疡患者治疗后须复查胃镜，排除1%–5%的恶变可能。  
+- PPI如奥美拉唑经CYP2C19代谢，可能与氯吡格雷等药物相互作用；雷贝拉唑和泮托拉唑受基因多态性影响小，更适合多药共用或老年患者。  
+- 抗生素选择需考虑地区耐药率，避免使用高耐药药物（如克拉霉素耐药率>30%地区）。  
+- 铋剂、四环素、呋喃唑酮等有特定不良反应，应严格按剂量使用并监测。
+2026-04-28 23:09:53,163 - agent - DEBUG - middleware.py:127 - [Disclaimer Middleware] 已成功为本次回复注入医疗免责声明。
+2026-04-28 23:11:05,180 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有5条消息。
+2026-04-28 23:11:05,180 - agent - DEBUG - middleware.py:47 - [log_before_model]HumanMessage | 我之前问你的，我有什么病，请告诉我
+2026-04-28 23:11:11,829 - agent - DEBUG - middleware.py:127 - [Disclaimer Middleware] 已成功为本次回复注入医疗免责声明。
+2026-04-28 23:12:37,650 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有7条消息。
+2026-04-28 23:12:37,650 - agent - DEBUG - middleware.py:47 - [log_before_model]HumanMessage | 不是有之前的历史对话记录吗
+2026-04-28 23:12:47,495 - agent - DEBUG - middleware.py:127 - [Disclaimer Middleware] 已成功为本次回复注入医疗免责声明。
+2026-04-28 23:20:10,860 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有9条消息。
+2026-04-28 23:20:10,860 - agent - DEBUG - middleware.py:47 - [log_before_model]HumanMessage | 有十二指肠溃疡怎么办
+2026-04-28 23:20:13,163 - agent - INFO - middleware.py:23 - [tool monitor]执行工具：rag_summarize
+2026-04-28 23:20:13,163 - agent - INFO - middleware.py:24 - [tool monitor]传入参数：{'query': '十二指肠溃疡的治疗方案和用药指南'}
+2026-04-28 23:20:22,167 - agent - INFO - middleware.py:28 - [tool monitor]工具rag_summarize调用成功
+2026-04-28 23:20:22,170 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有11条消息。
+2026-04-28 23:20:22,170 - agent - DEBUG - middleware.py:47 - [log_before_model]ToolMessage | 十二指肠溃疡（DU）的治疗以根除幽门螺杆菌（Hp）为核心，因90%以上患者存在Hp感染。推荐采用铋剂四联疗法，疗程14天，包括：质子泵抑制剂（PPI）或钾离子竞争性酸阻滞剂（P-CAB），每日2次餐前服用；铋剂（如枸橼酸铋钾220mg），每日2次餐前服用；阿莫西林1000mg联合另一种抗生素（如克拉霉素、左氧氟沙星、呋喃唑酮或四环素），每日2次餐后服用。PPI可抑制胃酸分泌，促进溃疡愈合，常用药物包括奥美拉唑、雷贝拉唑和泮托拉唑，需注意长期使用可能影响营养吸收及增加感染风险。十二指肠溃疡几乎不癌变，典型表现为饥饿痛、夜间痛，进食或服用抗酸剂可缓解。
+2026-04-28 23:20:42,149 - agent - DEBUG - middleware.py:127 - [Disclaimer Middleware] 已成功为本次回复注入医疗免责声明。
+2026-04-28 23:26:38,570 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有9条消息。
+2026-04-28 23:26:38,571 - agent - DEBUG - middleware.py:47 - [log_before_model]HumanMessage | 你好，测试一下流式输出，请只回复我‘收到’两个字。
+2026-04-28 23:26:39,985 - agent - DEBUG - middleware.py:127 - [Disclaimer Middleware] 已成功为本次回复注入医疗免责声明。
+2026-04-28 23:29:56,065 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有9条消息。
+2026-04-28 23:29:56,065 - agent - DEBUG - middleware.py:47 - [log_before_model]HumanMessage | 你好，测试一下流式输出，请只回复我‘收到’两个字。
+2026-04-28 23:29:56,979 - agent - DEBUG - middleware.py:127 - [Disclaimer Middleware] 已成功为本次回复注入医疗免责声明。
+2026-04-28 23:30:16,432 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有11条消息。
+2026-04-28 23:30:16,432 - agent - DEBUG - middleware.py:47 - [log_before_model]HumanMessage | 我有十二指肠溃疡，怎么办
+2026-04-28 23:30:18,963 - agent - INFO - middleware.py:23 - [tool monitor]执行工具：rag_summarize
+2026-04-28 23:30:18,964 - agent - INFO - middleware.py:24 - [tool monitor]传入参数：{'query': '十二指肠溃疡的治疗方案和用药指南'}
+2026-04-28 23:30:29,621 - agent - INFO - middleware.py:28 - [tool monitor]工具rag_summarize调用成功
+2026-04-28 23:30:29,625 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有13条消息。
+2026-04-28 23:30:29,626 - agent - DEBUG - middleware.py:47 - [log_before_model]ToolMessage | 十二指肠溃疡（DU）的治疗以根除幽门螺杆菌（Hp）为核心，因90%以上患者存在Hp感染。推荐采用铋剂四联疗法，疗程14天，包括：质子泵抑制剂（PPI）或钾离子竞争性酸阻滞剂（P-CAB），每日2次餐前服用；铋剂（如枸橼酸铋钾220mg），每日2次餐前服用；阿莫西林1000mg联合另一种抗生素（如克拉霉素、左氧氟沙星、呋喃唑酮或四环素），每日2次餐后服用。PPI可选用受CYP2C19基因多态性影响小的雷贝拉唑或药物相互作用少的泮托拉唑。十二指肠溃疡几乎不癌变，无需常规复查胃镜排除恶变，但需规范完成抗Hp治疗及抑酸治疗以促进愈合、预防复发。
+2026-04-28 23:30:45,647 - agent - DEBUG - middleware.py:127 - [Disclaimer Middleware] 已成功为本次回复注入医疗免责声明。
+2026-04-28 23:38:23,388 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有13条消息。
+2026-04-28 23:38:23,389 - agent - DEBUG - middleware.py:47 - [log_before_model]HumanMessage | 回复我收到
+2026-04-28 23:38:24,604 - agent - DEBUG - middleware.py:127 - [Disclaimer Middleware] 已成功为本次回复注入医疗免责声明。
+2026-04-28 23:43:53,293 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有1条消息。
+2026-04-28 23:43:53,293 - agent - DEBUG - middleware.py:47 - [log_before_model]HumanMessage | 1
+2026-04-28 23:43:55,215 - agent - DEBUG - middleware.py:127 - [Disclaimer Middleware] 已成功为本次回复注入医疗免责声明。
+2026-04-28 23:49:38,024 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有1条消息。
+2026-04-28 23:49:38,025 - agent - DEBUG - middleware.py:47 - [log_before_model]HumanMessage | 回复我收到
+2026-04-28 23:49:39,612 - agent - DEBUG - middleware.py:127 - [Disclaimer Middleware] 已成功为本次回复注入医疗免责声明。
+2026-04-28 23:49:49,613 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有3条消息。
+2026-04-28 23:49:49,613 - agent - DEBUG - middleware.py:47 - [log_before_model]HumanMessage | 我有十二指肠溃疡，怎么办
+2026-04-28 23:49:51,296 - agent - INFO - middleware.py:23 - [tool monitor]执行工具：rag_summarize
+2026-04-28 23:49:51,296 - agent - INFO - middleware.py:24 - [tool monitor]传入参数：{'query': '十二指肠溃疡的治疗与日常管理'}
+2026-04-28 23:50:00,119 - agent - INFO - middleware.py:28 - [tool monitor]工具rag_summarize调用成功
+2026-04-28 23:50:00,122 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有5条消息。
+2026-04-28 23:50:00,122 - agent - DEBUG - middleware.py:47 - [log_before_model]ToolMessage | 十二指肠溃疡（DU）的治疗与日常管理需基于其病因和临床特征。90%以上的DU患者存在幽门螺杆菌（Hp）感染，因此根除Hp是治疗的核心措施。DU好发于十二指肠球部，典型症状为空腹痛、饥饿痛或夜间痛，进食或服用抗酸剂后可缓解。DU几乎不发生癌变，恶变率极低。日常管理应避免诱发因素，如非甾体抗炎药（NSAIDs）使用，并注意饮食规律。由于Hp主要通过人传人途径传播，家庭内聚集性感染明显，建议对密切接触者进行筛查。
+2026-04-28 23:50:16,075 - agent - DEBUG - middleware.py:127 - [Disclaimer Middleware] 已成功为本次回复注入医疗免责声明。
+2026-04-28 23:54:28,049 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有5条消息。
+2026-04-28 23:54:28,049 - agent - DEBUG - middleware.py:47 - [log_before_model]HumanMessage | 我有十二指肠溃疡怎么办
+2026-04-28 23:54:29,565 - agent - INFO - middleware.py:23 - [tool monitor]执行工具：rag_summarize
+2026-04-28 23:54:29,565 - agent - INFO - middleware.py:24 - [tool monitor]传入参数：{'query': '十二指肠溃疡的治疗方法和日常注意事项'}
+2026-04-28 23:54:38,639 - agent - INFO - middleware.py:28 - [tool monitor]工具rag_summarize调用成功
+2026-04-28 23:54:38,640 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有7条消息。
+2026-04-28 23:54:38,640 - agent - DEBUG - middleware.py:47 - [log_before_model]ToolMessage | 十二指肠溃疡的治疗以根除幽门螺杆菌（Hp）为核心，90%以上患者存在Hp感染。推荐采用铋剂四联疗法：质子泵抑制剂（PPI）或钾离子竞争性酸阻滞剂（P-CAB）、铋剂、阿莫西林联合另一种抗生素（如克拉霉素、左氧氟沙星、呋喃唑酮或四环素），疗程14天。PPI可抑制胃酸分泌，促进溃疡愈合；胃黏膜保护剂如硫糖铝、瑞巴派特等可辅助修复黏膜。
+
+日常注意事项包括：避免使用非甾体抗炎药（NSAIDs）；规律饮食，避免过度饥饿或暴饮暴食；因十二指肠溃疡典型表现为饥饿痛、空腹痛和夜间痛，可适当在睡前加餐以缓解症状；注意餐具卫生，防止Hp家庭内传播。由于十二指肠溃疡几乎不发生癌变，无需像胃溃疡那样常规复查胃镜排除恶变。
+2026-04-28 23:54:56,990 - agent - DEBUG - middleware.py:127 - [Disclaimer Middleware] 已成功为本次回复注入医疗免责声明。
+2026-04-28 23:59:23,345 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有5条消息。
+2026-04-28 23:59:23,345 - agent - DEBUG - middleware.py:47 - [log_before_model]HumanMessage | 1
+2026-04-28 23:59:24,765 - agent - DEBUG - middleware.py:127 - [Disclaimer Middleware] 已成功为本次回复注入医疗免责声明。
+2026-04-29 00:03:52,073 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有1条消息。
+2026-04-29 00:03:52,073 - agent - DEBUG - middleware.py:47 - [log_before_model]HumanMessage | 你好，请回复我收到
+2026-04-29 00:03:52,971 - agent - DEBUG - middleware.py:127 - [Disclaimer Middleware] 已成功为本次回复注入医疗免责声明。

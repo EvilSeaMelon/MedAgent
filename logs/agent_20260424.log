@@ -1,0 +1,12 @@
+2026-04-24 11:56:33,046 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有1条消息。
+2026-04-24 11:56:33,046 - agent - DEBUG - middleware.py:47 - [log_before_model]HumanMessage | 请记住我叫旋哥，我很帅
+2026-04-24 11:56:36,685 - agent - DEBUG - middleware.py:127 - [Disclaimer Middleware] 已成功为本次回复注入医疗免责声明。
+2026-04-24 11:58:39,067 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有3条消息。
+2026-04-24 11:58:39,068 - agent - DEBUG - middleware.py:47 - [log_before_model]HumanMessage | 我的血压偏高，请记住这个信息
+2026-04-24 11:58:46,370 - agent - DEBUG - middleware.py:127 - [Disclaimer Middleware] 已成功为本次回复注入医疗免责声明。
+2026-04-24 12:02:29,860 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有5条消息。
+2026-04-24 12:02:29,861 - agent - DEBUG - middleware.py:47 - [log_before_model]HumanMessage | 根据历史对话记录回答，旋哥帅不帅
+2026-04-24 12:02:32,016 - agent - DEBUG - middleware.py:127 - [Disclaimer Middleware] 已成功为本次回复注入医疗免责声明。
+2026-04-24 12:02:45,481 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有7条消息。
+2026-04-24 12:02:45,481 - agent - DEBUG - middleware.py:47 - [log_before_model]HumanMessage | 旋哥血压高不高
+2026-04-24 12:02:53,572 - agent - DEBUG - middleware.py:127 - [Disclaimer Middleware] 已成功为本次回复注入医疗免责声明。

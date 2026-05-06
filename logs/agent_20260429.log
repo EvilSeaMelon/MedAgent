@@ -1,0 +1,84 @@
+2026-04-29 00:14:11,718 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有1条消息。
+2026-04-29 00:14:11,718 - agent - DEBUG - middleware.py:47 - [log_before_model]HumanMessage | 回复我“收到”
+2026-04-29 00:14:12,482 - agent - DEBUG - middleware.py:127 - [Disclaimer Middleware] 已成功为本次回复注入医疗免责声明。
+2026-04-29 00:38:30,700 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有1条消息。
+2026-04-29 00:38:30,700 - agent - DEBUG - middleware.py:47 - [log_before_model]HumanMessage | 回复我收到
+2026-04-29 00:44:24,057 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有1条消息。
+2026-04-29 00:44:24,058 - agent - DEBUG - middleware.py:47 - [log_before_model]HumanMessage | 回复我收到
+2026-04-29 00:44:24,945 - agent - DEBUG - middleware.py:127 - [Disclaimer Middleware] 已成功为本次回复注入医疗免责声明。
+2026-04-29 00:45:02,863 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有3条消息。
+2026-04-29 00:45:02,863 - agent - DEBUG - middleware.py:47 - [log_before_model]HumanMessage | 我十二指肠溃疡怎么办
+2026-04-29 00:45:07,062 - agent - INFO - middleware.py:23 - [tool monitor]执行工具：rag_summarize
+2026-04-29 00:45:07,062 - agent - INFO - middleware.py:24 - [tool monitor]传入参数：{'query': '十二指肠溃疡的症状、治疗和日常护理'}
+2026-04-29 00:45:14,567 - agent - INFO - middleware.py:28 - [tool monitor]工具rag_summarize调用成功
+2026-04-29 00:45:14,568 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有5条消息。
+2026-04-29 00:45:14,568 - agent - DEBUG - middleware.py:47 - [log_before_model]ToolMessage | 十二指肠溃疡（DU）主要症状为典型的饥饿痛、空腹痛和夜间痛，进食或服用抗酸剂后可迅速缓解。90%以上患者存在幽门螺杆菌（Hp）感染，好发于十二指肠球部，恶变率极低。治疗需根除Hp（如采用标准三联或四联疗法），并使用抑酸药物（如质子泵抑制剂）促进溃疡愈合。日常护理应避免诱发因素，如非甾体抗炎药（NSAIDs）使用、吸烟、饮酒及精神压力；饮食宜规律，避免过度饥饿或暴饮暴食。
+2026-04-29 00:45:27,193 - agent - DEBUG - middleware.py:127 - [Disclaimer Middleware] 已成功为本次回复注入医疗免责声明。
+2026-04-29 00:52:23,747 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有5条消息。
+2026-04-29 00:52:23,748 - agent - DEBUG - middleware.py:47 - [log_before_model]HumanMessage | 请回复我收到
+2026-04-29 15:23:02,048 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有7条消息。
+2026-04-29 15:23:02,049 - agent - DEBUG - middleware.py:47 - [log_before_model]HumanMessage | 随便输出点东西看看有没有流式输出
+2026-04-29 15:23:04,596 - agent - DEBUG - middleware.py:127 - [Disclaimer Middleware] 已成功为本次回复注入医疗免责声明。
+2026-04-29 15:34:26,859 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有7条消息。
+2026-04-29 15:34:26,859 - agent - DEBUG - middleware.py:47 - [log_before_model]HumanMessage | 随便输出点文字
+2026-04-29 15:42:23,577 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有7条消息。
+2026-04-29 15:42:23,578 - agent - DEBUG - middleware.py:47 - [log_before_model]HumanMessage | 随便输出点东西
+2026-04-29 15:42:26,662 - agent - DEBUG - middleware.py:127 - [Disclaimer Middleware] 已成功为本次回复注入医疗免责声明。
+2026-04-29 15:46:45,810 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有7条消息。
+2026-04-29 15:46:45,811 - agent - DEBUG - middleware.py:47 - [log_before_model]HumanMessage | 随便输出点文字
+2026-04-29 15:50:29,361 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有7条消息。
+2026-04-29 15:50:29,362 - agent - DEBUG - middleware.py:47 - [log_before_model]HumanMessage | 随便输出点东西
+2026-04-29 15:59:31,595 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有7条消息。
+2026-04-29 15:59:31,596 - agent - DEBUG - middleware.py:47 - [log_before_model]HumanMessage | 随便输出点文字
+2026-04-29 15:59:34,862 - agent - DEBUG - middleware.py:127 - [Disclaimer Middleware] 已成功为本次回复注入医疗免责声明。
+2026-04-29 15:59:55,844 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有1条消息。
+2026-04-29 15:59:55,844 - agent - DEBUG - middleware.py:47 - [log_before_model]HumanMessage | 你好
+2026-04-29 15:59:59,389 - agent - DEBUG - middleware.py:127 - [Disclaimer Middleware] 已成功为本次回复注入医疗免责声明。
+2026-04-29 16:06:59,560 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有1条消息。
+2026-04-29 16:06:59,560 - agent - DEBUG - middleware.py:47 - [log_before_model]HumanMessage | 随便输出点内容
+2026-04-29 16:07:03,165 - agent - DEBUG - middleware.py:127 - [Disclaimer Middleware] 已成功为本次回复注入医疗免责声明。
+2026-04-29 21:45:21,522 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有3条消息。
+2026-04-29 21:45:21,522 - agent - DEBUG - middleware.py:47 - [log_before_model]HumanMessage | 你好，我是张三，我今年 35 岁，我对青霉素过敏
+2026-04-29 21:45:26,052 - agent - DEBUG - middleware.py:127 - [Disclaimer Middleware] 已成功为本次回复注入医疗免责声明。
+2026-04-29 21:45:50,496 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有6条消息。
+2026-04-29 21:45:50,496 - agent - DEBUG - middleware.py:47 - [log_before_model]HumanMessage | 我感冒了，你可以给我开点抗生素吗？
+2026-04-29 21:45:56,606 - agent - INFO - middleware.py:23 - [tool monitor]执行工具：rag_summarize
+2026-04-29 21:45:56,606 - agent - INFO - middleware.py:24 - [tool monitor]传入参数：{'query': '普通感冒的治疗原则及青霉素过敏患者用药禁忌'}
+2026-04-29 21:46:02,631 - agent - INFO - middleware.py:28 - [tool monitor]工具rag_summarize调用成功
+2026-04-29 21:46:02,632 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有8条消息。
+2026-04-29 21:46:02,632 - agent - DEBUG - middleware.py:47 - [log_before_model]ToolMessage | 参考资料中未涉及普通感冒的治疗原则及青霉素过敏患者用药禁忌相关内容。
+2026-04-29 21:46:12,807 - agent - DEBUG - middleware.py:127 - [Disclaimer Middleware] 已成功为本次回复注入医疗免责声明。
+2026-04-29 21:47:23,267 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有1条消息。
+2026-04-29 21:47:23,267 - agent - DEBUG - middleware.py:47 - [log_before_model]HumanMessage | 我感冒了，你可以给我开点抗生素吗？
+2026-04-29 21:47:25,031 - agent - INFO - middleware.py:23 - [tool monitor]执行工具：rag_summarize
+2026-04-29 21:47:25,032 - agent - INFO - middleware.py:24 - [tool monitor]传入参数：{'query': '感冒是否需要使用抗生素'}
+2026-04-29 21:47:30,003 - agent - INFO - middleware.py:28 - [tool monitor]工具rag_summarize调用成功
+2026-04-29 21:47:30,005 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有3条消息。
+2026-04-29 21:47:30,005 - agent - DEBUG - middleware.py:47 - [log_before_model]ToolMessage | 参考资料中未提及感冒是否需要使用抗生素的相关信息。
+2026-04-29 21:47:31,729 - agent - INFO - middleware.py:23 - [tool monitor]执行工具：rag_summarize
+2026-04-29 21:47:31,729 - agent - INFO - middleware.py:24 - [tool monitor]传入参数：{'query': '普通感冒的治疗原则和抗生素使用指征'}
+2026-04-29 21:47:35,215 - agent - INFO - middleware.py:28 - [tool monitor]工具rag_summarize调用成功
+2026-04-29 21:47:35,216 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有5条消息。
+2026-04-29 21:47:35,216 - agent - DEBUG - middleware.py:47 - [log_before_model]ToolMessage | 参考资料中未涉及普通感冒的治疗原则和抗生素使用指征相关内容。
+2026-04-29 21:47:38,130 - agent - INFO - middleware.py:23 - [tool monitor]执行工具：rag_summarize
+2026-04-29 21:47:38,131 - agent - INFO - middleware.py:24 - [tool monitor]传入参数：{'query': '上呼吸道感染 抗生素使用指南'}
+2026-04-29 21:47:41,919 - agent - INFO - middleware.py:28 - [tool monitor]工具rag_summarize调用成功
+2026-04-29 21:47:41,920 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有7条消息。
+2026-04-29 21:47:41,920 - agent - DEBUG - middleware.py:47 - [log_before_model]ToolMessage | 参考资料中未包含关于“上呼吸道感染抗生素使用指南”的相关信息。
+2026-04-29 21:47:50,258 - agent - DEBUG - middleware.py:127 - [Disclaimer Middleware] 已成功为本次回复注入医疗免责声明。
+2026-04-29 22:54:03,754 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有4条消息。
+2026-04-29 22:54:03,754 - agent - DEBUG - middleware.py:47 - [log_before_model]HumanMessage | 帮我查一下 P1001 的病历记录
+2026-04-29 22:54:06,699 - agent - INFO - middleware.py:23 - [tool monitor]执行工具：fetch_patient_record
+2026-04-29 22:54:06,699 - agent - INFO - middleware.py:24 - [tool monitor]传入参数：{'patient_id': 'P1001'}
+2026-04-29 22:54:07,694 - agent - INFO - middleware.py:28 - [tool monitor]工具fetch_patient_record调用成功
+2026-04-29 22:54:07,695 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有6条消息。
+2026-04-29 22:54:07,695 - agent - DEBUG - middleware.py:47 - [log_before_model]ToolMessage | Error executing tool fetch_patient_record: 'gbk' codec can't encode character '\U0001f4e1' in position 2: illegal multibyte sequence
+2026-04-29 22:54:14,132 - agent - DEBUG - middleware.py:127 - [Disclaimer Middleware] 已成功为本次回复注入医疗免责声明。
+2026-04-29 23:01:45,100 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有6条消息。
+2026-04-29 23:01:45,100 - agent - DEBUG - middleware.py:47 - [log_before_model]HumanMessage | 帮我查一下 P1001 的病历记录
+2026-04-29 23:01:47,971 - agent - INFO - middleware.py:23 - [tool monitor]执行工具：fetch_patient_record
+2026-04-29 23:01:47,971 - agent - INFO - middleware.py:24 - [tool monitor]传入参数：{'patient_id': 'P1001'}
+2026-04-29 23:01:48,851 - agent - INFO - middleware.py:28 - [tool monitor]工具fetch_patient_record调用成功
+2026-04-29 23:01:48,852 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有8条消息。
+2026-04-29 23:01:48,852 - agent - DEBUG - middleware.py:47 - [log_before_model]ToolMessage | {'姓名': '周秀英', '年龄': '38', '性别': '男', '既往病史': '急性胃肠炎', '过敏史': '头孢类过敏', '近期症状(主诉)': '反酸、烧心、嗳气', '近期体征': '血压:144/79 mmHg, 幽门螺旋杆菌:阳性 (+) DPM=150'}
+2026-04-29 23:01:56,821 - agent - DEBUG - middleware.py:127 - [Disclaimer Middleware] 已成功为本次回复注入医疗免责声明。
