@@ -1,4 +1,4 @@
-# 🏥 MedAgent 医疗健康智能体系统 (Medical Intelligence Agent)
+# 🏥 MedAgent 医疗健康智能体系统
 
 ![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-00a393.svg)
@@ -66,10 +66,8 @@ Agent_Project/
 ## 🚀 快速启动
 
 ### 1. 环境准备
-确保已安装 Python 3.10+ 环境。克隆项目后安装核心依赖：
+确保已安装 Python 3.10+ 环境。克隆项目后安装requirements.txt核心依赖
 
-\`\`\`bash
-pip install fastapi uvicorn streamlit langchain langchain-openai chromadb rank_bm25 tiktoken
 
 ### 2. 配置环境变量
 在项目根目录创建 `.env` 文件，或在 `config/` 下的 yaml 文件中填入相应的 API Keys (如阿里云百炼 API_KEY, 数据库连接等)。
