@@ -26,9 +26,7 @@ class ReactAgent:
         history = get_history(session_id)
         input_messages = list(history.messages)
 
-        # ==========================================
-        # 1：静默注入长时记忆（患者画像）
-        # ==========================================
+        # 静默注入长时记忆（患者画像）
         profile = get_patient_profile(session_id)
         if profile:
             profile_str = json.dumps(profile, ensure_ascii=False)
@@ -42,7 +40,7 @@ class ReactAgent:
             "messages": input_messages
         }
 
-        print(f"\n⏳ [AI 引擎] 收到请求：{query}，正在全面思考...")
+        print(f"\n[AI 引擎] 收到请求：{query}，正在全面思考...")
         try:
             # 阻塞式调用，我们已知这个绝对不会卡！
             response = self.agent.invoke(
@@ -58,11 +56,9 @@ class ReactAgent:
                 HumanMessage(content=query),
                 AIMessage(content=final_ai_message),
             ])
-            print("\n✅ [AI 引擎] 思考完毕，准备返回完整结果")
+            print("\n[AI 引擎] 思考完毕，准备返回完整结果")
 
-            # ==========================================
-            # 2：开启后台线程，更新长时记忆
-            # ==========================================
+            # 开启后台线程，更新长时记忆
             # 不让用户等，直接开个线程去背后慢慢提取
             threading.Thread(
                 target=update_patient_profile_task,
@@ -72,7 +68,7 @@ class ReactAgent:
             return final_ai_message
 
         except Exception as e:
-            error_msg = f"🚨 引擎底层报错: {str(e)}"
+            error_msg = f"引擎底层报错: {str(e)}"
             print(error_msg)
             return error_msg
 
@@ -80,5 +76,5 @@ class ReactAgent:
         """调用底层的 clear() 方法，一键清空 MySQL 中对应 session_id 的所有记录，同时清空画像"""
         history = get_history(session_id)
         history.clear()
-        # 🌟 同步清空长时记忆 JSON
+        # 同步清空长时记忆 JSON
         clear_patient_profile(session_id)

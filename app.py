@@ -1,18 +1,17 @@
 import streamlit as st
 import requests
-import time  # 🌟 引入时间模块，用来控制打字速度
+import time
 
 st.set_page_config(page_title="MedAgent 医疗健康助手", page_icon="⚕️")
 st.title("MedAgent 医疗健康助手")
 st.caption("稳定版")
 st.divider()
 
-# 接口地址改回普通地址
 BACKEND_URL = "http://127.0.0.1:8000/api/chat"
 
 with st.sidebar:
-    st.header("⚙️ 助手控制台")
-    if st.button("🗑️ 清空历史对话", use_container_width=True):
+    st.header("助手控制台")
+    if st.button("清空历史对话", use_container_width=True):
         delete_url = "http://127.0.0.1:8000/api/chat/history/P1001"
         try:
             res = requests.delete(delete_url)
@@ -35,7 +34,7 @@ if prompt := st.chat_input("请输入问题..."):
     with st.chat_message("assistant"):
         with st.spinner("正在检索医学知识并深度思考..."):
             try:
-                # 1. 彻底放弃 stream=True，一次性把完整答案拿过来
+                # 先一次性把完整答案拿过来
                 response = requests.post(
                     BACKEND_URL,
                     json={"query": prompt, "session_id": "P1001"}
@@ -46,16 +45,14 @@ if prompt := st.chat_input("请输入问题..."):
                     full_response = data["data"]["answer"]
 
 
-                    # ==========================================
-                    # 🌟 核心魔法：前端生成器，制造打字机效果
-                    # ==========================================
+                    # 前端生成器，制造打字机流式效果
                     def stream_data(text):
                         for char in text:
                             time.sleep(0.015)  # 调节这个数字可以改变打字速度 (0.015 秒一个字)
                             yield char
 
 
-                    # 2. st.write_stream 会接收这个生成器，一个字一个字地在屏幕上敲出来！
+                    # 2. st.write_stream 会接收生成器
                     st.write_stream(stream_data(full_response))
 
                     # 3. 保存进记忆
@@ -64,4 +61,4 @@ if prompt := st.chat_input("请输入问题..."):
                     st.error(f"后端返回错误状态码: {response.status_code}")
 
             except requests.exceptions.ConnectionError:
-                st.error("🚨 无法连接到后端服务器！请确保 FastAPI 后端正在运行！")
+                st.error("无法连接到后端服务器！请确保 FastAPI 后端正在运行！")

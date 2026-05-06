@@ -3,7 +3,7 @@ import csv
 import os
 from mcp.server.fastmcp import FastMCP
 
-# 1. 初始化 MCP 服务器
+# 初始化 MCP 服务器
 mcp = FastMCP("AegisMedicalDB")
 
 # 存放外部数据的内存字典
@@ -13,21 +13,19 @@ def get_external_data():
     """读取本地 CSV 模拟外部数据库"""
     global external_data
     if not external_data:
-        # 为了让微服务能独立运行，这里直接获取当前目录下的 csv 路径
-        # 假设当前文件在 Agent_Project/mcp_service.py，数据在 data/external/gastric_patients.csv
         current_dir = os.path.dirname(os.path.abspath(__file__))
         csv_path = os.path.join(current_dir, "data", "external", "gastric_patients.csv")
         
         if not os.path.exists(csv_path):
-            print(f"⚠️ [微服务警告] 未找到外部数据文件：{csv_path}")
+            print(f"[微服务警告] 未找到外部数据文件：{csv_path}")
             return
 
-        # 准备多种常见的编码格式进行轮询尝试
+        # 准备多种常见的编码格式
         encodings_to_try = ['utf-8-sig', 'utf-8', 'gbk', 'gb2312', 'latin1']
 
         for encod in encodings_to_try:
             try:
-                # 🌟 errors="replace" 会把实在无法识别的生僻乱码强行替换为 ""，绝不让程序崩溃
+                # errors="replace" 会把无法识别的生僻乱码强行替换为 ""，不让程序崩溃
                 with open(csv_path, "r", encoding=encod, errors="replace") as f:
                     reader = csv.reader(f)
                     next(reader)  # 跳过表头
@@ -46,13 +44,13 @@ def get_external_data():
                                     "近期症状(主诉)": arr[6],
                                     "近期体征": arr[7],
                                 }
-                # 如果没有抛出编码异常，说明读取成功，直接跳出循环
+                # 没有抛出编码异常则说明读取成功，跳出循环
                 break
             except UnicodeDecodeError:
                 # 如果当前编码报错，就默默继续尝试下一种编码
                 continue
 
-# 2. 使用 @mcp.tool 暴露给大模型
+# 使用 @mcp.tool 暴露给大模型
 @mcp.tool()
 def fetch_patient_record(patient_id: str) -> str:
     """
@@ -72,5 +70,4 @@ def fetch_patient_record(patient_id: str) -> str:
         return ""
 
 if __name__ == "__main__":
-    print("Aegis-Med 外部病历查询 MCP 微服务已启动！等待主引擎连接...")
     mcp.run(transport="stdio")

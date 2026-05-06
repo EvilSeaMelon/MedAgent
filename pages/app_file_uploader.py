@@ -1,5 +1,5 @@
 """
-基于 Streamlit 的知识库入库页面（前后端分离版）。
+基于 Streamlit 的知识库入库页面
 """
 import streamlit as st
 import requests

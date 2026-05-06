@@ -1,35 +1,22 @@
 import asyncio
-import csv
 import os
 import sys
 import threading
-
-from utils.logger_handler import logger
 from langchain_core.tools import tool
 from rag.rag_service import RagSummarizeService
-import random
-from utils.config_handler import agent_conf
-from utils.path_tool import get_abs_path
 
 rag = RagSummarizeService()
 
 external_data = {}
 
-# ---------------------------------------------------------
-# 工具 1：知识库问答 (保留你的 RAG)
-# ---------------------------------------------------------
+# 工具 1：知识库问答
 @tool(description="当用户询问具体的疾病症状、用药禁忌等医学知识时，必须调用此工具检索本地权威医学知识库")
 def rag_summarize(query: str) -> str:
     return rag.rag_summarize(query)
 
-# ---------------------------------------------------------
 # 工具 2：患者既往病历查询 做成mcp了
-# ---------------------------------------------------------
 
-
-# ---------------------------------------------------------
 # 工具 3：触发报告生成流程
-# ---------------------------------------------------------
 @tool(description="当用户明确要求【生成健康报告】、【出具评估档案】时，必须调用此工具来开启报告生成流程")
 def fill_context_for_report() -> str:
     """
@@ -39,11 +26,9 @@ def fill_context_for_report() -> str:
     return "fill_context_for_report已调用"
 
 
-# =========================================================
-# 🌟 MCP 远程微服务接入网关 (降维打击代码)
-# =========================================================
+# 工具 4：MCP 远程微服务接入网关
 
-# “隔音电话亭” 开新线程。
+# 开新线程
 def _run_async_in_thread(coro):
     """
     专门为 FastAPI 写的异步隔离器。
@@ -88,8 +73,7 @@ def fetch_patient_record(patient_id: str) -> str:
         current_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
         mcp_script = os.path.join(current_dir, "mcp_service.py")
 
-        # 配置 MCP 宿主连接：这里采用 stdio (标准输入输出) 模式
-        # 它的安全性极高，相当于拔掉网线也能实现跨进程通信，是企业内网的标配
+        # 配置 MCP 宿主连接：采用 stdio (标准输入输出) 模式
         server_params = StdioServerParameters(
             command=sys.executable,
             args=[mcp_script],
@@ -101,7 +85,7 @@ def fetch_patient_record(patient_id: str) -> str:
         async with stdio_client(server_params) as (read, write):
             # 2. 开启通信会话
             async with ClientSession(read, write) as session:
-                # 3. 初始化握手 (告诉对方我是大模型客户端)
+                # 3. 初始化握手
                 await session.initialize()
 
                 # 4. 跨系统远程调用！执行远端暴露的 "fetch_patient_record"

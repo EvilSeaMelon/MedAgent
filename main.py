@@ -1,22 +1,20 @@
 import uvicorn
 from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
-# 引入流式响应组件
-from fastapi.responses import StreamingResponse
 
 # 引入数据契约
 from schemas.payload import ChatRequest
-# 引入智能体大脑
+# 引入agent核心
 from agent.react_agent import ReactAgent
 
-# 1. 初始化 FastAPI 引擎
+# 初始化 FastAPI
 app = FastAPI(
     title="MedAgent 医疗健康助手",
     description="后端服务架构",
     version="1.0.0"
 )
 
-# 2. 挂载 CORS 中间件
+# 挂载 CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -25,13 +23,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ==========================================
-# 🌟 全局单例模式 (回归最稳的原生写法)
-# ==========================================
-# 在服务器启动时，只实例化一次大脑，常驻内存
-print("⏳ 正在初始化核心大模型引擎...")
+# 全局单例模式
+# 在服务器启动时，只实例化一次大脑
+print("正在初始化核心大模型引擎...")
 global_agent = ReactAgent()
-print("✅ 引擎加载完毕！")
+print("加载完毕！")
 
 def get_shared_agent():
     """依赖注入函数：确保每个请求都共用上面那个全局大脑"""
@@ -51,7 +47,7 @@ async def chat_endpoint(
     """接收对话请求，等待思考完毕后返回完整 JSON"""
     print(f"📥 接收到普通请求 -> Session: {request.session_id} | Query: {request.query}")
 
-    # 调用刚才改好的 execute 同步方法
+    # 调用刚才改好的 execute
     answer = agent.execute(query=request.query, session_id=request.session_id)
 
     # 将完整的答案打包成标准 JSON 返回
@@ -64,7 +60,7 @@ async def chat_endpoint(
     }
 
 
-# 5. 清理记忆接口
+# 清理记忆接口
 @app.delete("/api/chat/history/{session_id}")
 async def clear_chat_history(
     session_id: str,
@@ -78,5 +74,4 @@ async def clear_chat_history(
 
 
 if __name__ == "__main__":
-    # 使用 reload=True 方便你在修改代码后自动重启
     uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)

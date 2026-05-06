@@ -27,6 +27,7 @@ def monitor_tool(
         result = handler(request)
         logger.info(f"[tool monitor]工具{request.tool_call['name']}调用成功")
 
+        # 如果调用了提示词切换tool，就在上下文数据字典中将"report"值改为true
         if request.tool_call['name'] == "fill_context_for_report":
             request.runtime.context["report"] = True
 
@@ -39,7 +40,7 @@ def monitor_tool(
 @before_model
 def log_before_model(
         state: AgentState,          # 整个Agent智能体中的状态记录
-        runtime: Runtime,           # 记录了整个执行过程中的上下文信息
+        runtime: Runtime,           # 记录整个执行过程中的上下文信息
 ):         # 在模型执行前输出日志
 
     logger.info(f"[log_before_model]即将调用模型，带有{len(state['messages'])}条消息。")
@@ -58,9 +59,7 @@ def report_prompt_switch(request: ModelRequest):     # 动态切换提示词
     return load_system_prompt()
 
 
-# ---------------------------------------------------------
-# 新增中间件 1：医疗报告自动落盘拦截器
-# ---------------------------------------------------------
+# 新增中间件：医疗报告自动落盘拦截器
 @after_model
 def report_generator_middleware(
         state: AgentState,
@@ -101,9 +100,7 @@ def report_generator_middleware(
                 logger.error(f"[Report Middleware] 报告落盘失败: {str(e)}")
 
 
-# ---------------------------------------------------------
-# 新增中间件 2：医疗免责声明强制注入器
-# ---------------------------------------------------------
+# 新增中间件：医疗免责声明强制注入器
 @after_model
 def medical_disclaimer_middleware(
         state: AgentState,
@@ -111,11 +108,10 @@ def medical_disclaimer_middleware(
 ):
     """
     拦截大模型的每一次最终回复，强制注入医疗免责声明。
-    这在医疗 AI 中是极其重要的合规性（Compliance）设计！
     """
     last_message = state['messages'][-1]
 
-    # 只有在 AI 最终给出文字回复时（而不是在默默调用工具时）才追加声明
+    # 只有在 AI 最终给出文字回复时才追加声明
     if last_message.type == "ai" and last_message.content and not last_message.tool_calls:
 
         # 使用红色或加粗突出显示（支持 Markdown 的前端可以直接渲染）
@@ -128,7 +124,7 @@ def medical_disclaimer_middleware(
 
 
 """
-触发：用户说“帮我生成报告” -> 大模型调用 fill_context_for_report 工具。
+触发：用户说“帮我生成报告” -> 大模型调用 fill_context_for_report 工具。tool
 
 打标：原有的 monitor_tool 拦截到该工具，设置 runtime.context["report"] = True。
 
