@@ -70,8 +70,6 @@ Agent_Project/
 
 \`\`\`bash
 pip install fastapi uvicorn streamlit langchain langchain-openai chromadb rank_bm25 tiktoken
-# (根据 requirements.txt 补全)
-\`\`\`
 
 ### 2. 配置环境变量
 在项目根目录创建 `.env` 文件，或在 `config/` 下的 yaml 文件中填入相应的 API Keys (如阿里云百炼 API_KEY, 数据库连接等)。
