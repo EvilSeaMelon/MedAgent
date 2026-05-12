@@ -25,9 +25,7 @@ app.add_middleware(
 
 # 全局单例模式
 # 在服务器启动时，只实例化一次大脑
-print("正在初始化核心大模型引擎...")
 global_agent = ReactAgent()
-print("加载完毕！")
 
 def get_shared_agent():
     """依赖注入函数：确保每个请求都共用上面那个全局大脑"""
@@ -45,9 +43,8 @@ async def chat_endpoint(
         agent: ReactAgent = Depends(get_shared_agent)
 ):
     """接收对话请求，等待思考完毕后返回完整 JSON"""
-    print(f"📥 接收到普通请求 -> Session: {request.session_id} | Query: {request.query}")
+    print(f"接收到普通请求 -> Session: {request.session_id} | Query: {request.query}")
 
-    # 调用刚才改好的 execute
     answer = agent.execute(query=request.query, session_id=request.session_id)
 
     # 将完整的答案打包成标准 JSON 返回

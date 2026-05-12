@@ -30,6 +30,7 @@ class RagSummarizeService(object):
     def retriever_docs(self, query: str):
         return self.retriever.invoke(query)
 
+    # 得到知识库返回的答案并拼接成json传给llm总结
     def rag_summarize(self, query: str) -> str:
         """
         主要获取检索数据，遍历生成str，传给chain
