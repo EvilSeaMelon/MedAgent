@@ -1,8 +1,8 @@
 {
     "age": "38",
     "gender": "男性",
-    "chronic_disease": "未知",
+    "chronic_disease": "胃溃疡",
     "allergy": "头孢类抗生素过敏",
-    "current_symptoms": "反酸、烧心、嗳气；感冒（流涕、咳嗽、低热等普通感冒症状）",
+    "current_symptoms": "反酸、烧心、嗳气；上腹部疼痛；可能伴有恶心",
     "psychological_status": "未知"
 }

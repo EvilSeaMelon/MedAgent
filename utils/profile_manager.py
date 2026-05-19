@@ -3,7 +3,7 @@
 import os
 import json
 from langchain_core.messages import HumanMessage, SystemMessage
-from model.factory import chat_model  # 复用你现有的模型
+from model.factory import chat_model
 from utils.path_tool import get_abs_path
 
 # 设置存储画像的文件夹
@@ -64,3 +64,44 @@ def clear_patient_profile(session_id: str):
     file_path = os.path.join(PROFILE_DIR, f"{session_id}.json")
     if os.path.exists(file_path):
         os.remove(file_path)
+
+
+async def async_update_patient_profile(session_id: str, query: str, ai_response: str):
+    """
+    【LangGraph 专用异步任务】
+    使用大模型提取本次对话中的医疗关键信息，并更新画像。
+    必须使用 async/await 机制以避免阻塞主线程。
+    """
+    print(f"\n[后台画像引擎] 启动异步监控：正在提取 {session_id} 的长时记忆...")
+    old_profile = get_patient_profile(session_id)
+
+    extract_prompt = f"""
+    你是一个专业的医疗数据分析专家。
+    请根据以下最新的【医患对话记录】，以及该患者【之前的画像】，提取或更新患者的长期特征。
+    如果对话中没有提到新的医疗特征，请保持原有特征不变。
+
+    【之前的画像】: {json.dumps(old_profile, ensure_ascii=False)}
+    【最新患者提问】: {query}
+    【最新医生回答】: {ai_response}
+
+    请严格只输出一段合法的 JSON 格式数据，不要有任何 Markdown 标记或多余的解释。JSON 应该包含以下键（如果没有对应信息填 "未知"）：
+    "age" (年龄), "gender" (性别), "chronic_disease" (慢性病史), "allergy" (过敏史), "current_symptoms" (近期症状), "psychological_status" (情绪/心理状态)
+    """
+
+    try:
+        # 使用 ainvoke 进行非阻塞的异步调用
+        response = await chat_model.ainvoke([HumanMessage(content=extract_prompt)])
+        new_profile_text = response.content.strip().replace("```json", "").replace("```", "")
+        new_profile = json.loads(new_profile_text)
+
+        # 持久化写入本地 JSON 文件
+        file_path = os.path.join(PROFILE_DIR, f"{session_id}.json")
+        with open(file_path, "w", encoding="utf-8") as f:
+            json.dump(new_profile, f, ensure_ascii=False, indent=4)
+
+        print(f"[后台画像引擎] Session {session_id} 的画像已更新并持久化至 JSON！")
+
+    except json.JSONDecodeError:
+        print(f"[后台画像引擎] JSON 解析失败，大模型未按规范输出格式。")
+    except Exception as e:
+        print(f"[后台画像引擎] 画像更新发生未知异常: {e}")
