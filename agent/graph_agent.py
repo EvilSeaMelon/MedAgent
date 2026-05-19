@@ -185,8 +185,4 @@ workflow.add_edge("report", "disclaimer")
 workflow.add_edge("disclaimer", END)
 workflow.add_edge("profile_updater", END)
 
-# 实例化一个内存检查点
-memory = MemorySaver()
-
-# 编译成最终可执行的 Agent 图，并挂载记忆引擎！
-med_agent_graph = workflow.compile(checkpointer=memory)
+med_agent_graph = workflow.compile()

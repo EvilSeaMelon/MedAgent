@@ -8,6 +8,8 @@ from schemas.payload import ChatRequest
 # 引入agent核心
 from agent.react_agent import ReactAgent
 from agent.graph_agent import med_agent_graph
+from utils.mysql_history import save_chat_message, load_chat_history, clear_chat_history_db
+from utils.profile_manager import clear_patient_profile
 
 # 初始化 FastAPI
 app = FastAPI(
@@ -63,44 +65,54 @@ async def health_check():
 
 @app.post("/api/chat")
 async def chat_endpoint(request: ChatRequest):
-    """接收对话请求，异步驱动 LangGraph 状态机并返回结果"""
-    print(f"\n[API 路由] 收到请求 -> Session: {request.session_id} | Query: {request.query}")
+    print(f"\n[API 路由] 收到请求 -> Session: {request.session_id}")
 
-    # 1. 初始State
-    initial_state = {
-        "messages": [HumanMessage(content=request.query)],
-        "session_id": request.session_id
-    }
+    try:
+        # 1. 异步从 MySQL 捞出历史记录
+        history_messages = await load_chat_history(request.session_id)
 
-    # 2. 通过config传入thread_id
-    # LangGraph 底层的 MemorySaver 会根据这个 thread_id 自动去把之前的聊天记录捞出来合并
-    config = {"configurable": {"thread_id": request.session_id}}
+        # 2. 追加本次的用户问题
+        current_user_msg = HumanMessage(content=request.query)
+        history_messages.append(current_user_msg)
 
-    # 3. 启动图引擎
-    final_state = await med_agent_graph.ainvoke(initial_state, config=config)
-
-    # 4. 提取最后一条消息作为给用户的最终回复
-    answer = final_state["messages"][-1].content
-
-    return {
-        "code": 200,
-        "message": "success",
-        "data": {
-            "answer": answer
+        # 3. 构造状态机初始状态
+        initial_state = {
+            "messages": history_messages,
+            "session_id": request.session_id
         }
-    }
 
-# # 清理记忆接口
-# @app.delete("/api/chat/history/{session_id}")
-# async def clear_chat_history(
-#     session_id: str,
-#     agent: ReactAgent = Depends(get_shared_agent)
-# ):
-#     try:
-#         agent.clear_memory(session_id=session_id)
-#         return {"code": 200, "message": "记忆清除成功"}
-#     except Exception as e:
-#         return {"code": 500, "message": f"记忆清除失败: {str(e)}"}
+        # 4. 图引擎全异步流转
+        final_state = await med_agent_graph.ainvoke(initial_state)
+        ai_answer = final_state["messages"][-1].content
+
+        # 5. 写入 MySQL
+        await save_chat_message(request.session_id, 'human', request.query)
+        await save_chat_message(request.session_id, 'ai', ai_answer)
+
+        return {
+            "code": 200,
+            "message": "success",
+            "data": {"answer": ai_answer}
+        }
+
+    except Exception as e:
+        print(f"[API 错误] {e}")
+        return {"code": 500, "message": f"服务器内部错误: {str(e)}"}
+
+
+@app.delete("/api/chat/history/{session_id}")
+async def clear_chat_history(session_id: str):
+    print(f"\n[API 路由] 请求彻底重置会话 -> Session: {session_id}")
+    try:
+        # 1. 删聊天记录 (短时记忆)
+        await clear_chat_history_db(session_id)
+
+        # 2. 删患者画像 (长时记忆)
+        await clear_patient_profile(session_id)
+
+        return {"code": 200, "message": "会话数据已彻底重置"}
+    except Exception as e:
+        return {"code": 500, "message": f"记忆清除失败: {str(e)}"}
 
 
 if __name__ == "__main__":
