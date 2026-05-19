@@ -1,98 +1,144 @@
-# 🏥 MedAgent 医疗健康智能体系统
+# 🏥 MedAgent 2.0 - 基于 LangGraph 的高可用医疗智能体
 
-![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)
-![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-00a393.svg)
-![LangChain](https://img.shields.io/badge/LangChain-Integration-green.svg)
-![MCP](https://img.shields.io/badge/Protocol-MCP-orange.svg)
-![Architecture](https://img.shields.io/badge/Architecture-ReAct-blueviolet.svg)
+![Python Version](https://img.shields.io/badge/Python-3.10%2B-blue.svg)
+![Framework](https://img.shields.io/badge/Framework-LangGraph%20%7C%20FastAPI-green.svg)
+![Database](https://img.shields.io/badge/Database-MySQL%20%7C%20SQLAlchemy-orange.svg)
 
-## 📖 项目简介
-
-本项目是基于 FastAPI 与 LangChain 框架构建的严肃医疗智能体 Agent 系统。基于 ReAct (Reasoning and Acting) 架构实现自主病理推理与工具调度，底层深度整合高精度混合检索 RAG。
-
-针对大模型落地医疗场景的核心痛点，系统**采用多线程沙盒与异步路由结合的混合调度基座**，重点攻克了专业幻觉、长上下文记忆管理瓶颈、以及复杂多框架嵌套（全异步 FastAPI 嵌套同步阻塞 LangChain）下的死锁难题。
-
-## ✨ 核心特性与架构亮点
-
-* **🧠 ReAct 智能体大脑**：基于 LangChain 搭建“思考-行动-观察”循环，能够自主拆解复杂医疗问诊，动态调度后台诊断工具。
-* **🛠️ MCP 微服务解耦**：前沿落地 Model Context Protocol (MCP) 协议，将高敏医疗工具链、结构化外部数据流（如 `gastric_patients.csv`）与主干大模型进行进程级物理隔离与安全解耦。
-* **⚡ 同异步混合调度网关**：为彻底解决 FastAPI 异步事件循环与 Agent 同步推理流冲突导致的死锁问题，创新设计“AOP 中间件 + 多线程沙盒隔离”网关，实现外层高并发接入与内层同步推理的完美兼顾。
-* **🔍 高精度混合检索 (Hybrid RAG)**：重构基础 RAG 链路，采用“双路召回 (BM25 + ChromaDB) + BAAI/BGE 交叉编码器深度精排”，辅以 `SemanticChunker` 动态语义切分，消除医疗长尾词汇与专有名词的检索幻觉。
-* **💾 持久化长时记忆引擎**：基于 MySQL 实现会话级与用户级 (Patient Profile) 双轨持久化。引入“基于 Token 触发的动态滑动窗口截断策略 (`tiktoken` 反向累加)”，精准控制 API 成本并赋予极度流畅的多轮问诊体验。
-
-## 📂 核心目录结构
-
-\`\`\`text
-Agent_Project/
-├── agent/                  # Agent 核心逻辑
-│   ├── react_agent.py      # ReAct Agent 组装与调度执行主干
-│   └── tools/              # Agent 工具库与拦截器
-│       ├── agent_tools.py  # 医疗诊断/检索等具体工具定义
-│       └── middleware.py   # AOP 切面拦截、状态流转记录
-├── config/                 # 配置文件中心 (agent, chroma, prompts, rag)
-├── data/                   # 本地知识库与数据资产
-│   ├── profiles/           # 用户/患者结构化 JSON 画像 (如 P1001.json)
-│   ├── external/           # 外部导入数据 (CSV/Excel)
-│   └── *.txt / *.pdf       # 病理分类、用药方案等医疗长文本库
-├── logs/                   # 日志归档目录
-├── model/                  # 大模型工厂
-│   └── factory.py          # LLM 实例初始化 (集成百炼/GPT等)
-├── pages/                  # Streamlit 多页应用前端
-│   └── app_file_uploader.py# 知识库文档上传与管理页面
-├── prompts/                # 提示词工程管理
-│   ├── main_prompt.txt     # 核心系统人设与 ReAct 模板
-│   └── report_prompt.txt   # 诊断报告生成模板
-├── rag/                    # RAG 检索微服务
-│   ├── rag_service.py      # 混合检索调用流水线
-│   └── vector_store.py     # 向量数据库操作封装
-├── schemas/                # 数据交互模型
-│   └── payload.py          # 基于 Pydantic 的 API 输入输出验证
-├── utils/                  # 基础设施与工具类
-│   ├── file_history_store.py # Token 动态截断与会话本地化存储
-│   └── config_handler.py   # YAML 配置解析
-├── app.py                  # Streamlit 前端交互主入口
-├── main.py                 # FastAPI 后端微服务主入口
-└── mcp_service.py          # MCP 协议服务端入口
-\`\`\`
-
-## 🛠️ 技术栈 (Tech Stack)
-
-* **后端开发**：Python 3.10+, FastAPI, Pydantic, Uvicorn
-* **前端交互**：Streamlit
-* **AI 与 Agent 架构**：LangChain, Model Context Protocol (MCP), ReAct Paradigm
-* **RAG 与算法**：ChromaDB, BM25 (Rank-BM25), BGE-Reranker, SemanticChunker, `tiktoken`
-* **并发与存储**：Asyncio, ThreadPoolExecutor, MySQL, 本地 JSON 持久化
-
-## 🚀 快速启动
-
-### 1. 环境准备
-确保已安装 Python 3.10+ 环境。克隆项目后安装requirements.txt核心依赖
-
-
-### 2. 配置环境变量
-在项目根目录创建 `.env` 文件，或在 `config/` 下的 yaml 文件中填入相应的 API Keys (如阿里云百炼 API_KEY, 数据库连接等)。
-
-### 3. 启动后端微服务 (FastAPI)
-启动支持同异步解耦的底层服务：
-\`\`\`bash
-uvicorn main:app --host 0.0.0.0 --port 8000 --reload
-\`\`\`
-
-### 4. 启动 MCP 服务 (可选)
-如果需要独立运行 MCP 工具挂载服务：
-\`\`\`bash
-python mcp_service.py
-\`\`\`
-
-### 5. 启动交互式前端 (Streamlit)
-新开一个终端窗口，启动可视化医疗问诊台：
-\`\`\`bash
-streamlit run app.py
-\`\`\`
-
-## 📝 研发纪要与避坑指南
-* **开发规约**：为防止 Event Loop 死锁，在 FastAPI 路由中调用 LangChain `.invoke()` 时，**必须**使用标准的同步 `def` 路由，依托 FastAPI 底层线程池接管阻塞任务。
-* **Context 控制**：严禁直接加载全量 history，必须调用 `file_history_store.py` 中的 `truncate_by_token()` 进行反向截断。
+**MedAgent 2.0** 是一个企业级的全异步医疗 AI 助手后端架构。它摒弃了传统的单例 AgentExecutor 和黑盒拦截器，全面拥抱 **LangGraph 显式状态机**，实现了问诊对话与医疗报告生成的无缝切换。通过彻底解耦无状态网关与底层并发任务，系统具备了极高的响应速度与横向扩展能力。
 
 ---
-*Powered by RAG & MCP Architecture*
+
+## ✨ 核心特性 (Key Features)
+
+### 1. 🚄 纯异步状态机架构 (LangGraph)
+* 废弃传统的 Agent 中间件拦截器，利用 LangGraph 的 **Conditional Edges (条件边)** 显式控制数据流。
+* **双轨模式**：大模型可自主触发信号弹，在“多轮闲聊问诊”与“严肃医疗报告生成”两种截然不同的 Prompt 状态间无缝切换，彻底消除上下文串线。
+
+### 2. ⚡ 高并发旁路任务 (Fan-out)
+* 引入图并发节点机制。当系统决定回复用户时，数据流瞬间分为两路：
+  * **主路**：毫秒级生成最终回复（带免责声明）并返回给网关。
+  * **旁路**：在后台静默调用大模型，提取并持久化用户的“长时特征画像 (JSON)”。主线程 0 阻塞，极致提升用户体验。
+
+### 3. 🗄️ SQLAlchemy 双引擎数据基座
+* **异步引擎 (AsyncEngine)**：支撑 FastAPI 与 LangGraph 的全速流转，管理用户会话历史，保证高并发下的数据库连接池稳定。
+* **同步引擎 (SyncEngine)**：支撑跨进程的 MCP (Model Context Protocol) 服务，优雅查询外部真实的医疗病历系统。
+
+### 4. 🛠️ 统一工具车间 (Unified ToolNode)
+* 摒弃臃肿的定制节点，将 `RAG 向量检索` 与 `MCP 微服务调用` 统一封装于 `ToolNode`。
+* 利用大模型原生的 Function Calling 自动分发，图拓扑结构极其精简，新增工具“零”架构修改成本。
+
+---
+
+## 🏗️ 系统架构图 (Architecture)
+
+```text
+[用户请求] -> FastAPI 网关 (无状态)
+                 ↓
+                 (捞取 MySQL 历史)
+                 ↓
+[ START ] ---> 【Reasoner (大模型思考)】 <=======> 【ToolNode (RAG / MCP 查病历)】
+                 ↓                                         (条件路由：打回继续思考)
+        (触发报告模式变道?) 
+          ↙              ↘
+    【报告生成器】      【返回给用户】 (Fan-out 并发分叉)
+          ↓              ↙           ↘
+          ↓   【免责声明 (主线程)】   【后台长时画像抽取 (异步线程)】
+          ↘              ↓                   ↓
+                [ 返回前端界面 ]        [ 写入本地 JSON / 数据库 ]
+                 ↓
+                 (请求结束，双向落盘 MySQL)
+```
+
+---
+
+## 🚀 快速开始 (Quick Start)
+
+### 1. 环境准备
+确保你的系统已安装 Python 3.10+ 和 MySQL 8.0+。
+
+```bash
+# 克隆仓库
+git clone https://github.com/yourusername/MedAgent.git
+cd MedAgent
+
+# 安装依赖
+pip install -r requirements.txt
+```
+
+### 2. 数据库配置
+1. 在 MySQL 中创建一个名为 `medagent_db` 的数据库。
+2. 确保 `utils/database.py` 中的数据库配置（用户名、密码）与你的本地环境一致。
+3. 系统会在首次启动时，利用 FastAPI 的生命周期钩子（Lifespan）自动创建所需的表结构 (`chat_history` 等)。
+
+### 3. 环境变量与密钥
+在项目根目录（或 `config/` 目录）配置你的 LLM API 密钥。例如：
+```bash
+export DASHSCOPE_API_KEY="sk-xxxxxxxxxxx"
+```
+
+### 4. 启动服务
+
+**启动主干服务 (FastAPI + LangGraph)：**
+```bash
+uvicorn main:app --host 127.0.0.1 --port 8000 --reload
+```
+
+**启动独立的 MCP 微服务 (可选，用于查病历)：**
+```bash
+# 在新终端窗口中启动
+mcp dev mcp_service.py
+```
+
+---
+
+## 📂 目录结构 (Project Structure)
+
+```text
+MedAgent/
+├── agent/
+│   ├── graph_agent.py      # 【核心】LangGraph 状态机编排与节点定义
+│   └── tools/              # 业务工具 (RAG 触发器、报告触发器等)
+├── data/
+│   ├── external/           # 模拟的外部病历 CSV
+│   └── profiles/           # 用户长时画像持久化 JSON 目录
+├── model/
+│   └── factory.py          # 大模型统一工厂类实例化
+├── rag/
+│   └── ...                 # ChromaDB 向量检索库初始化与封装
+├── schemas/
+│   └── payload.py          # Pydantic 接口请求体定义
+├── utils/
+│   ├── database.py         # 【核心】SQLAlchemy 双引擎连接池与 ORM 模型
+│   ├── mysql_history.py    # 基于 ORM 的异步短时对话记忆读写
+│   ├── profile_manager.py  # 异步长时画像特征抽取与管理
+│   └── prompt_loader.py    # 提示词加载器
+├── config/                 # YAML 配置文件目录
+├── main.py                 # FastAPI 入口：无状态网关与会话生命周期管理
+├── mcp_service.py          # 基于 FastMCP 的独立外部系统接口
+└── requirements.txt        # 项目依赖
+```
+
+---
+
+## 💡 核心 API 接口说明
+
+| Method | Endpoint                     | Description                                   |
+| ------ | ---------------------------- | --------------------------------------------- |
+| `GET`  | `/health`                    | 检查服务运行状态                              |
+| `POST` | `/api/chat`                  | 主力问诊对话接口。传入 `session_id` 与 `query`|
+| `DEL`  | `/api/chat/history/{id}`     | 彻底重置指定用户的历史对话与长期画像数据      |
+
+**`/api/chat` 请求示例:**
+```json
+{
+  "session_id": "P1001",
+  "query": "我最近吃海鲜总是胃痛，请帮我查一下我的病历，看看怎么回事。"
+}
+```
+
+---
+
+## 🛠️ 下一步开发计划 (Roadmap)
+- [ ] **PostgreSQL 迁移**：利用 LangGraph 官方 `AsyncPostgresSaver` 进一步增强 Checkpointer 能力。
+- [ ] **LangSmith 监控接入**：实现图节点运行耗时与 Token 消耗的可视化追踪。
+
