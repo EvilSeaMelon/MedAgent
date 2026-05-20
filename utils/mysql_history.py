@@ -9,12 +9,18 @@ async def load_chat_history(session_id: str) -> list[BaseMessage]:
     messages = []
 
     async with AsyncSessionLocal() as session:
-        # SELECT * FROM chat_history WHERE session_id = ? ORDER BY id ASC
-        stmt = select(ChatHistory).where(ChatHistory.session_id == session_id).order_by(ChatHistory.id.asc())
+        limit_num = 15 * 2
+        stmt = (
+            select(ChatHistory)
+            .where(ChatHistory.session_id == session_id)
+            .order_by(ChatHistory.id.desc())  # 注意这里是 desc
+            .limit(limit_num)
+        )
         result = await session.execute(stmt)
-        rows = result.scalars().all()  # 解析为对象列表
+        rows = result.scalars().all()
 
-        for row in rows:
+        # reverse翻转回正常的时间顺序
+        for row in reversed(rows):
             if row.message_type == 'human':
                 messages.append(HumanMessage(content=row.content))
             elif row.message_type == 'ai':

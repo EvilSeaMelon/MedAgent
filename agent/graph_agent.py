@@ -1,7 +1,7 @@
 
 import json
 from typing import TypedDict, Annotated, Sequence
-from langchain_core.messages import BaseMessage, SystemMessage, AIMessage, HumanMessage
+from langchain_core.messages import BaseMessage, SystemMessage, AIMessage, HumanMessage, trim_messages
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph.message import add_messages
 from langgraph.graph import StateGraph, END, START
@@ -45,8 +45,18 @@ def reasoner_node(state: MedAgentState):
     if profile:
         sys_prompt += f"\n\n【系统后台提示】该患者目前的长期画像特征为：{json.dumps(profile, ensure_ascii=False)}"
 
+    # 新增：Token 滑动窗口修剪
+    trimmed_history = trim_messages(
+        messages,
+        max_tokens=4000,  # Token 窗口上限
+        token_counter=chat_model,  # 使用你当前模型的分词器计算
+        strategy="last",  # 保留最近
+        start_on="human",  # 确保截断后第一句话是人类说的
+        include_system=True  # 不要把 system prompt 截掉
+    )
+
     # 组装上下文（System + 历史记录）
-    invoke_messages = [SystemMessage(content=sys_prompt)] + messages
+    invoke_messages = [SystemMessage(content=sys_prompt)] + trimmed_history
 
     # 调用大模型
     response = model_with_tools.invoke(invoke_messages)
