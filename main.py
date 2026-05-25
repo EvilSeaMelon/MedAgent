@@ -1,24 +1,30 @@
+from pathlib import Path
+from typing import Optional
+
 import uvicorn
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, File, Form, UploadFile
+from fastapi.concurrency import run_in_threadpool
 from fastapi.middleware.cors import CORSMiddleware
 from langchain_core.messages import HumanMessage
 
-# 引入数据契约
-from schemas.payload import ChatRequest
-# 引入agent核心
-from agent.react_agent import ReactAgent
 from agent.graph_agent import med_agent_graph
-from utils.mysql_history import save_chat_message, load_chat_history, clear_chat_history_db
+from rag.vector_store import VectorStoreService
+from schemas.payload import ChatRequest
+from utils.config_handler import chroma_conf
+from utils.mysql_history import (
+    clear_chat_history_db,
+    load_chat_history,
+    save_chat_message,
+)
+from utils.path_tool import get_abs_path
 from utils.profile_manager import clear_patient_profile
 
-# 初始化 FastAPI
 app = FastAPI(
-    title="MedAgent 医疗健康助手",
-    description="后端服务架构",
-    version="1.0.0"
+    title="MedAgent Backend",
+    description="FastAPI service for chat and knowledge ingestion",
+    version="1.1.0",
 )
 
-# 挂载 CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -27,15 +33,27 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# langgraph不再需要全局agent
+_vector_store_service: Optional[VectorStoreService] = None
 
-# # 全局单例模式
-# # 在服务器启动时，只实例化一次大脑
-# global_agent = ReactAgent()
 
-# def get_shared_agent():
-#     """依赖注入函数：确保每个请求都共用上面那个全局大脑"""
-#     return global_agent
+def _api_response(code: int, message: str, data: Optional[dict] = None) -> dict:
+    return {
+        "code": code,
+        "message": message,
+        "data": data or {},
+    }
+
+
+def _get_vector_store_service() -> VectorStoreService:
+    global _vector_store_service
+    if _vector_store_service is None:
+        _vector_store_service = VectorStoreService()
+    return _vector_store_service
+
+
+def _allowed_extensions() -> set[str]:
+    configured = chroma_conf.get("allow_knowledge_file_type", [])
+    return {str(ext).lower().lstrip(".") for ext in configured}
 
 
 @app.get("/health")
@@ -43,76 +61,118 @@ async def health_check():
     return {"status": "ok", "service": "Aegis-Med Backend is running!"}
 
 
-# @app.post("/api/chat")
-# async def chat_endpoint(
-#         request: ChatRequest,
-#         agent: ReactAgent = Depends(get_shared_agent)
-# ):
-#     """接收对话请求，等待思考完毕后返回完整 JSON"""
-#     print(f"接收到普通请求 -> Session: {request.session_id} | Query: {request.query}")
-#
-#     answer = agent.execute(query=request.query, session_id=request.session_id)
-#
-#     # 将完整的答案打包成标准 JSON 返回
-#     return {
-#         "code": 200,
-#         "message": "success",
-#         "data": {
-#             "answer": answer
-#         }
-#     }
-
-
 @app.post("/api/chat")
 async def chat_endpoint(request: ChatRequest):
-    print(f"\n[API 路由] 收到请求 -> Session: {request.session_id}")
+    print(f"\n[API] Chat request received -> session_id={request.session_id}")
 
     try:
-        # 1. 异步从 MySQL 捞出历史记录
         history_messages = await load_chat_history(request.session_id)
 
-        # 2. 追加本次的用户问题
         current_user_msg = HumanMessage(content=request.query)
         history_messages.append(current_user_msg)
 
-        # 3. 构造状态机初始状态
         initial_state = {
             "messages": history_messages,
-            "session_id": request.session_id
+            "session_id": request.session_id,
         }
 
-        # 4. 图引擎全异步流转
         final_state = await med_agent_graph.ainvoke(initial_state)
         ai_answer = final_state["messages"][-1].content
 
-        # 5. 写入 MySQL
-        await save_chat_message(request.session_id, 'human', request.query)
-        await save_chat_message(request.session_id, 'ai', ai_answer)
+        await save_chat_message(request.session_id, "human", request.query)
+        await save_chat_message(request.session_id, "ai", ai_answer)
 
-        return {
-            "code": 200,
-            "message": "success",
-            "data": {"answer": ai_answer}
-        }
-
+        return _api_response(
+            code=200,
+            message="success",
+            data={"answer": ai_answer},
+        )
     except Exception as e:
-        print(f"[API 错误] {e}")
-        return {"code": 500, "message": f"服务器内部错误: {str(e)}"}
+        print(f"[API] Chat error: {e}")
+        return _api_response(code=500, message=f"server_error: {str(e)}")
+
+
+@app.post("/api/knowledge/upload")
+async def upload_knowledge_file(
+    file: UploadFile = File(..., description="Knowledge file (txt/pdf)"),
+    overwrite: bool = Form(True, description="Overwrite if same filename exists"),
+):
+    """
+    上传知识文件并触发向量库导入
+
+    Request:
+      - file: 二进制文件
+      - overwrite: 布尔值（可选）
+
+    Response (uniform format):
+    - code/message/data
+    """
+    if not file.filename:
+        return _api_response(code=400, message="bad_request: empty filename")
+
+    safe_filename = Path(file.filename).name.strip()
+    if not safe_filename:
+        return _api_response(code=400, message="bad_request: invalid filename")
+
+    ext = Path(safe_filename).suffix.lower().lstrip(".")
+    allowed_exts = _allowed_extensions()
+    if ext not in allowed_exts:
+        return _api_response(
+            code=400,
+            message="bad_request: unsupported file type",
+            data={"allowed_types": sorted(allowed_exts)},
+        )
+
+    file_bytes = await file.read()
+    if not file_bytes:
+        return _api_response(code=400, message="bad_request: file is empty")
+
+    data_dir = Path(get_abs_path(chroma_conf["data_path"]))
+    data_dir.mkdir(parents=True, exist_ok=True)
+    target_path = data_dir / safe_filename
+
+    exists_before = target_path.exists()
+    if exists_before and not overwrite:
+        return _api_response(
+            code=409,
+            message="conflict: file already exists, set overwrite=true to replace",
+            data={"filename": safe_filename},
+        )
+
+    with open(target_path, "wb") as f:
+        f.write(file_bytes)
+
+    try:
+        vector_store_service = await run_in_threadpool(_get_vector_store_service)
+        await run_in_threadpool(vector_store_service.load_document)
+    except Exception as e:
+        return _api_response(code=500, message=f"ingest_failed: {str(e)}")
+    finally:
+        await file.close()
+
+    return _api_response(
+        code=200,
+        message="success",
+        data={
+            "filename": safe_filename,
+            "saved_path": str(target_path),
+            "size_bytes": len(file_bytes),
+            "content_type": file.content_type or "application/octet-stream",
+            "overwrite": overwrite,
+            "indexed": True,
+        },
+    )
 
 
 @app.delete("/api/chat/history/{session_id}")
 async def clear_chat_history(session_id: str):
-    print(f"\n[API 路由] 请求彻底重置会话 -> Session: {session_id}")
+    print(f"\n[API] Clear history request -> session_id={session_id}")
     try:
-        # 1. 删聊天记录 (短时记忆)
         await clear_chat_history_db(session_id)
-
-        # 2. 删患者画像 (长时记忆)
         await clear_patient_profile(session_id)
-
-        return {"code": 200, "message": "会话数据已彻底重置"}
+        return _api_response(code=200, message="session data cleared")
     except Exception as e:
-        return {"code": 500, "message": f"记忆清除失败: {str(e)}"}
+        return _api_response(code=500, message=f"clear_failed: {str(e)}")
 
 
 if __name__ == "__main__":
