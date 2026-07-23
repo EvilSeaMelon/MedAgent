@@ -1,7 +1,16 @@
 
 import json
-from typing import TypedDict, Annotated, Sequence
-from langchain_core.messages import BaseMessage, SystemMessage, AIMessage, HumanMessage, trim_messages
+from typing import TypedDict, Annotated, Sequence, NotRequired
+
+from pydantic import BaseModel, Field, ValidationError
+from langchain_core.messages import (
+    BaseMessage,
+    SystemMessage,
+    AIMessage,
+    HumanMessage,
+    ToolMessage,
+    trim_messages,
+)
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph.message import add_messages
 from langgraph.graph import StateGraph, END, START
@@ -21,6 +30,8 @@ class MedAgentState(TypedDict):
     messages: Annotated[Sequence[BaseMessage], add_messages]
     session_id: str
     report_mode: bool  # 抛弃 middleware，用这个管理状态机
+    retry_count: NotRequired[int]
+    tool_error: NotRequired[str]
 
 
 # ==========================================
@@ -29,6 +40,98 @@ class MedAgentState(TypedDict):
 # 工具节点 (LangGraph 自带了极其稳定的 ToolNode，直接封装)
 tools = [rag_summarize, fetch_patient_record, fill_context_for_report]
 tool_node = ToolNode(tools)
+
+MAX_TOOL_RETRIES = 2
+FALLBACK_TEXT = "基于现有资料无法给出可靠建议，请咨询专业医生。"
+
+
+class RagToolArgs(BaseModel):
+    query: str = Field(min_length=2, max_length=500)
+
+
+class PatientRecordToolArgs(BaseModel):
+    patient_id: str = Field(pattern=r"^P\d{4}$")
+
+
+class ReportToolArgs(BaseModel):
+    """报告信号工具当前无参数，仅用于校验空参数对象。"""
+
+
+TOOL_ARG_MODELS = {
+    "rag_summarize": RagToolArgs,
+    "fetch_patient_record": PatientRecordToolArgs,
+    "fill_context_for_report": ReportToolArgs,
+}
+
+
+def _tool_error_message(tool_name: str, error_type: str) -> str:
+    """只向模型回灌脱敏后的错误类型，避免泄露异常堆栈或患者数据。"""
+    return f"工具 {tool_name} 执行{error_type}，请修正参数后重试。"
+
+
+def validate_tool_call_node(state: MedAgentState):
+    """在 ToolNode 前校验模型生成的工具名和参数。"""
+    last_message = state["messages"][-1]
+    tool_calls = getattr(last_message, "tool_calls", [])
+    retry_count = state.get("retry_count", 0)
+
+    for call in tool_calls:
+        tool_name = call.get("name", "unknown")
+        args_model = TOOL_ARG_MODELS.get(tool_name)
+        try:
+            if args_model is None:
+                raise ValueError("unknown_tool")
+            args_model.model_validate(call.get("args", {}))
+        except (ValidationError, ValueError):
+            tool_message = ToolMessage(
+                content=_tool_error_message(tool_name, "参数校验失败"),
+                tool_call_id=call.get("id", "invalid-tool-call"),
+                name=tool_name,
+            )
+            return {
+                "messages": [tool_message],
+                "retry_count": retry_count + 1,
+                "tool_error": "invalid_args",
+            }
+
+    return {"retry_count": 0, "tool_error": ""}
+
+
+def safe_tool_node(state: MedAgentState):
+    """捕获工具异常和空结果，并将可修复错误回灌给推理节点。"""
+    last_call = state["messages"][-1].tool_calls[0]
+    tool_name = last_call.get("name", "unknown")
+    retry_count = state.get("retry_count", 0)
+
+    try:
+        result = tool_node.invoke(state)
+        result_messages = result.get("messages", [])
+        last_tool_message = result_messages[-1] if result_messages else None
+
+        if isinstance(last_tool_message, ToolMessage) and not str(last_tool_message.content).strip():
+            return {
+                **result,
+                "retry_count": retry_count + 1,
+                "tool_error": "empty_result",
+            }
+
+        return {**result, "retry_count": 0, "tool_error": ""}
+    except Exception:
+        tool_message = ToolMessage(
+            content=_tool_error_message(tool_name, "执行失败"),
+            tool_call_id=last_call.get("id", "failed-tool-call"),
+            name=tool_name,
+        )
+        return {
+            "messages": [tool_message],
+            "retry_count": retry_count + 1,
+            "tool_error": "execution_failed",
+        }
+
+
+def fallback_node(state: MedAgentState):
+    """医疗建议无法获得可靠依据时的统一安全出口。"""
+    return {"messages": [AIMessage(content=FALLBACK_TEXT)]}
 
 # 将工具绑定给大模型
 model_with_tools = chat_model.bind_tools(tools)
@@ -138,7 +241,7 @@ def route_after_reasoning(state: MedAgentState):
     # 如果大模型返回了 tool_calls，说明它想用工具，扳道岔导向 tool_node
     if last_message.tool_calls:
         print(f"[LangGraph 路由] 发现工具调用请求: {last_message.tool_calls[0]['name']} -> 导向 ToolNode")
-        return ["tools"]
+        return ["validate_tool_call"]
 
     # 2. Fan-out并行广播
     # 如果大模型决定回答用户，同时把数据包发往两个节点
@@ -150,6 +253,12 @@ def route_after_reasoning(state: MedAgentState):
 # 工具执行完后去哪儿？（核心状态机切换点）
 def route_after_tools(state: MedAgentState):
     last_message = state["messages"][-1]
+
+    if state.get("tool_error"):
+        if state.get("retry_count", 0) >= MAX_TOOL_RETRIES:
+            return "fallback"
+        return "reasoner"
+
     # 检查刚刚执行完的工具，是不是大模型发出的“写报告”信号？
     if last_message.type == "tool" and last_message.name == "fill_context_for_report":
         print("[LangGraph 路由] 检测到生成报告信号，切换至【报告车间】")
@@ -159,6 +268,15 @@ def route_after_tools(state: MedAgentState):
     return "reasoner"
 
 
+def route_after_validation(state: MedAgentState):
+    """参数不合法时有限次回炉，超过阈值进入安全兜底。"""
+    if state.get("tool_error"):
+        if state.get("retry_count", 0) >= MAX_TOOL_RETRIES:
+            return "fallback"
+        return "reasoner"
+    return "tools"
+
+
 # ==========================================
 # 4. 组装装配线 (Build the Graph)
 # ==========================================
@@ -166,10 +284,12 @@ workflow = StateGraph(MedAgentState)
 
 # 注册所有node
 workflow.add_node("reasoner", reasoner_node)
-workflow.add_node("tools", tool_node)
+workflow.add_node("validate_tool_call", validate_tool_call_node)
+workflow.add_node("tools", safe_tool_node)
 workflow.add_node("report", report_node)           # 注册报告站
 workflow.add_node("disclaimer", disclaimer_node)   # 注册质检站
 workflow.add_node("profile_updater", profile_updater_node)
+workflow.add_node("fallback", fallback_node)
 
 # 连线编排
 workflow.add_edge(START, "reasoner")
@@ -178,21 +298,28 @@ workflow.add_conditional_edges(
     "reasoner",
     route_after_reasoning,
     {
-     "tools": "tools",
+     "validate_tool_call": "validate_tool_call",
      "disclaimer": "disclaimer",
      "profile_updater": "profile_updater"
      }
+)
+# 工具调用先做参数校验，再进入执行节点；失败时回炉或兜底。
+workflow.add_conditional_edges(
+    "validate_tool_call",
+    route_after_validation,
+    {"tools": "tools", "reasoner": "reasoner", "fallback": "fallback"}
 )
 #  工具出来后，走向分叉口 2
 workflow.add_conditional_edges(
     "tools",
     route_after_tools,
-    {"report": "report", "reasoner": "reasoner"}
+    {"report": "report", "reasoner": "reasoner", "fallback": "fallback"}
 )
 # 报告生成完毕后，也要去加免责声明！
 workflow.add_edge("report", "disclaimer")
 # 质检合格，正式离站给用户！
 workflow.add_edge("disclaimer", END)
 workflow.add_edge("profile_updater", END)
+workflow.add_edge("fallback", END)
 
 med_agent_graph = workflow.compile()
